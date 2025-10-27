@@ -165,7 +165,7 @@ SELECT
   '12:00:00',
   'Gedung Widana Kencana',
   id
-FROM users WHERE nim = '2201001'
+FROM users WHERE nim = '20230040065'
 ON CONFLICT DO NOTHING;
 
 INSERT INTO meetings (title, description, date, start_time, end_time, location, created_by)
@@ -177,7 +177,7 @@ SELECT
   '12:00:00',
   'Smart Class',
   id
-FROM users WHERE nim = '2201001'
+FROM users WHERE nim = '20230040065'
 ON CONFLICT DO NOTHING;
 
 INSERT INTO meetings (title, description, date, start_time, end_time, location, created_by)
@@ -189,7 +189,7 @@ SELECT
   '17:00:00',
   'B4G',
   id
-FROM users WHERE nim = '2201001'
+FROM users WHERE nim = '20230040065'
 ON CONFLICT DO NOTHING;
 
 -- Add participants for meetings
@@ -202,7 +202,7 @@ SELECT
 FROM meetings m
 CROSS JOIN users u
 WHERE m.title = 'Rapat Koordinasi Bulanan'
-  AND u.nim IN ('2201001', '2201002', '2201003', '2201004', '2201005')
+  AND u.nim IN ('20230040262', '20240040305', '20240040282', '20240040043', '20230040065')
 ON CONFLICT DO NOTHING;
 
 -- Rapat Triwulan - Only core team
@@ -214,7 +214,7 @@ SELECT
 FROM meetings m
 CROSS JOIN users u
 WHERE m.title = 'Rapat Triwulan'
-  AND u.nim IN ('2201001', '2201002', '2201003')
+  AND u.nim IN ('20240040305', '20230040262', '20230040065')
 ON CONFLICT DO NOTHING;
 
 -- Rapat Kerja - Specific divisions
@@ -226,7 +226,7 @@ SELECT
 FROM meetings m
 CROSS JOIN users u
 WHERE m.title = 'Rapat Kerja'
-  AND u.nim IN ('2201001', '2201004', '2201005')
+  AND u.nim IN ('20240040305', '20230040262', '20230040065')
 ON CONFLICT DO NOTHING;
 
 -- Insert sample attendance (past meetings)
@@ -240,7 +240,7 @@ SELECT
   '16:00:00',
   'Aula',
   id
-FROM users WHERE nim = '2201001'
+FROM users WHERE nim = '20230040065'
 ON CONFLICT DO NOTHING;
 
 -- Add participants for past meeting
@@ -252,7 +252,7 @@ SELECT
 FROM meetings m
 CROSS JOIN users u
 WHERE m.title = 'Rapat Persiapan Hakrah 2025'
-  AND u.nim IN ('2201001', '2201002', '2201003', '2201004')
+  AND u.nim IN ('20230040262', '20240040305', '20230040065', '20240040100')
 ON CONFLICT DO NOTHING;
 
 -- Add attendance records for the past meeting
@@ -264,7 +264,7 @@ SELECT
 FROM meetings m
 CROSS JOIN users u
 WHERE m.title = 'Rapat Persiapan Hakrah 2025'
-  AND u.nim IN ('2201002', '2201003', '2201004')
+  AND u.nim IN ('20230040262', '20240040305', '20230040065')
 ON CONFLICT DO NOTHING;
 
 -- Success message

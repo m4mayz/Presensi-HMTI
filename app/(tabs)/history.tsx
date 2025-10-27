@@ -1,22 +1,25 @@
+import EmptyState from "@/components/EmptyState";
+import MeetingCard from "@/components/MeetingCard";
+import PageHeader from "@/components/PageHeader";
 import Colors from "@/constants/Colors";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
 import { Meeting } from "@/types/database.types";
-import { Ionicons } from "@expo/vector-icons";
 import React, { useCallback, useEffect, useState } from "react";
 import {
     ActivityIndicator,
     RefreshControl,
     ScrollView,
     StyleSheet,
-    Text,
     View,
 } from "react-native";
 
 interface AttendanceRecord {
+    id: string;
     meeting: Meeting;
     check_in_time: string;
     status: string;
+    created_at: string;
 }
 
 export default function HistoryPage() {
@@ -64,19 +67,12 @@ export default function HistoryPage() {
         setRefreshing(false);
     };
 
-    const formatDate = (dateString: string) => {
+    const formatAttendanceDate = (dateString: string) => {
         const date = new Date(dateString);
         return date.toLocaleDateString("id-ID", {
-            weekday: "long",
-            day: "numeric",
-            month: "long",
+            day: "2-digit",
+            month: "short",
             year: "numeric",
-        });
-    };
-
-    const formatTime = (timeString: string) => {
-        const date = new Date(timeString);
-        return date.toLocaleTimeString("id-ID", {
             hour: "2-digit",
             minute: "2-digit",
         });
@@ -92,12 +88,7 @@ export default function HistoryPage() {
 
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Riwayat Presensi</Text>
-                <Text style={styles.headerSubtitle}>
-                    Total {attendanceHistory.length} rapat
-                </Text>
-            </View>
+            <PageHeader title="Riwayat Presensi" showBackButton />
 
             <ScrollView
                 style={styles.scrollView}
@@ -110,72 +101,22 @@ export default function HistoryPage() {
                 }
             >
                 {attendanceHistory.length > 0 ? (
-                    attendanceHistory.map((record, index) => (
-                        <View key={index} style={styles.card}>
-                            <View style={styles.cardHeader}>
-                                <Text style={styles.cardTitle}>
-                                    {record.meeting?.title}
-                                </Text>
-                                <View style={styles.statusBadge}>
-                                    <Text style={styles.statusText}>
-                                        {record.status === "present"
-                                            ? "Hadir"
-                                            : "Tidak Hadir"}
-                                    </Text>
-                                </View>
-                            </View>
-
-                            <View style={styles.infoRow}>
-                                <Ionicons
-                                    name="calendar-outline"
-                                    size={16}
-                                    color="#64748B"
-                                />
-                                <Text style={styles.infoText}>
-                                    {record.meeting?.date
-                                        ? formatDate(record.meeting.date)
-                                        : ""}
-                                </Text>
-                            </View>
-
-                            <View style={styles.infoRow}>
-                                <Ionicons
-                                    name="location-outline"
-                                    size={16}
-                                    color="#64748B"
-                                />
-                                <Text style={styles.infoText}>
-                                    {record.meeting?.location ||
-                                        "Belum ditentukan"}
-                                </Text>
-                            </View>
-
-                            <View style={styles.checkInRow}>
-                                <Ionicons
-                                    name="checkmark-circle"
-                                    size={16}
-                                    color={Colors.green}
-                                />
-                                <Text style={styles.checkInText}>
-                                    Check-in: {formatTime(record.check_in_time)}
-                                </Text>
-                            </View>
-                        </View>
+                    attendanceHistory.map((record) => (
+                        <MeetingCard
+                            key={record.id}
+                            meeting={record.meeting}
+                            showAttendanceInfo
+                            attendanceDate={formatAttendanceDate(
+                                record.created_at
+                            )}
+                        />
                     ))
                 ) : (
-                    <View style={styles.emptyState}>
-                        <Ionicons
-                            name="document-text-outline"
-                            size={64}
-                            color="#CBD5E1"
-                        />
-                        <Text style={styles.emptyText}>
-                            Belum ada riwayat presensi
-                        </Text>
-                        <Text style={styles.emptySubtext}>
-                            Presensi Anda akan muncul di sini
-                        </Text>
-                    </View>
+                    <EmptyState
+                        icon="document-text-outline"
+                        title="Belum ada riwayat presensi"
+                        subtitle="Presensi Anda akan muncul di sini"
+                    />
                 )}
 
                 <View style={{ height: 100 }} />
@@ -187,7 +128,7 @@ export default function HistoryPage() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: Colors.bgLight.backgroundColor,
+        backgroundColor: Colors.blue,
     },
     loadingContainer: {
         flex: 1,
@@ -195,103 +136,10 @@ const styles = StyleSheet.create({
         alignItems: "center",
         backgroundColor: Colors.bgLight.backgroundColor,
     },
-    header: {
-        paddingHorizontal: 20,
-        paddingTop: 60,
-        paddingBottom: 20,
-        backgroundColor: Colors.bgLight.backgroundColor,
-    },
-    headerTitle: {
-        fontSize: 28,
-        fontWeight: "700",
-        color: Colors.bgLight.textColor,
-        marginBottom: 4,
-    },
-    headerSubtitle: {
-        fontSize: 14,
-        color: "#64748B",
-    },
     scrollView: {
         flex: 1,
     },
     scrollContent: {
-        padding: 20,
-    },
-    card: {
-        backgroundColor: "#fff",
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 12,
-        elevation: 2,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-    },
-    cardHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "flex-start",
-        marginBottom: 12,
-    },
-    cardTitle: {
-        fontSize: 16,
-        fontWeight: "600",
-        color: Colors.bgLight.textColor,
-        flex: 1,
-        marginRight: 8,
-    },
-    statusBadge: {
-        backgroundColor: "#DCFCE7",
-        paddingHorizontal: 12,
-        paddingVertical: 4,
-        borderRadius: 12,
-    },
-    statusText: {
-        fontSize: 12,
-        color: Colors.green,
-        fontWeight: "600",
-    },
-    infoRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 8,
-    },
-    infoText: {
-        fontSize: 14,
-        color: "#64748B",
-        marginLeft: 8,
-        flex: 1,
-    },
-    checkInRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginTop: 8,
-        paddingTop: 12,
-        borderTopWidth: 1,
-        borderTopColor: "#F1F5F9",
-    },
-    checkInText: {
-        fontSize: 13,
-        color: Colors.green,
-        marginLeft: 8,
-        fontWeight: "500",
-    },
-    emptyState: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        paddingVertical: 60,
-    },
-    emptyText: {
-        fontSize: 16,
-        fontWeight: "600",
-        color: "#94A3B8",
-        marginTop: 16,
-        marginBottom: 4,
-    },
-    emptySubtext: {
-        fontSize: 14,
-        color: "#CBD5E1",
+        paddingHorizontal: 20,
     },
 });
