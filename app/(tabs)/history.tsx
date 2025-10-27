@@ -115,7 +115,6 @@ export default function HistoryPage() {
                     <EmptyState
                         icon="document-text-outline"
                         title="Belum ada riwayat presensi"
-                        subtitle="Presensi Anda akan muncul di sini"
                     />
                 )}
 

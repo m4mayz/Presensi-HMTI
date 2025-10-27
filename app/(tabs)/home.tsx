@@ -5,8 +5,9 @@ import Colors from "@/constants/Colors";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
 import { Attendance, Meeting } from "@/types/database.types";
-import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import {
     ActivityIndicator,
     Image,
@@ -23,44 +24,19 @@ interface MeetingWithAttendance extends Meeting {
 }
 
 export default function HomePage() {
-    const { user } = useAuth();
+    const { user, refreshUser } = useAuth();
     const [upcomingMeetings, setUpcomingMeetings] = useState<Meeting[]>([]);
+    const [missedMeetings, setMissedMeetings] = useState<Meeting[]>([]);
     const [attendanceHistory, setAttendanceHistory] = useState<
         MeetingWithAttendance[]
     >([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
-    const loadData = async () => {
-        try {
-            await Promise.all([
-                fetchUpcomingMeetings(),
-                fetchAttendanceHistory(),
-            ]);
-        } catch (error) {
-            console.error("Error loading data:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        if (user) {
-            loadData();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user]);
-
-    const onRefresh = async () => {
-        setRefreshing(true);
-        await loadData();
-        setRefreshing(false);
-    };
-
-    const fetchUpcomingMeetings = async () => {
+    const fetchUpcomingMeetings = useCallback(async () => {
         if (!user?.id) return;
 
-        const today = new Date().toISOString().split("T")[0];
+        const now = new Date();
 
         // First, get meeting IDs where user is a participant
         const { data: participantData, error: participantError } =
@@ -82,27 +58,61 @@ export default function HomePage() {
 
         if (meetingIds.length === 0) {
             setUpcomingMeetings([]);
+            setMissedMeetings([]);
             return;
         }
 
-        // Fetch meetings where user is a participant
-        const { data, error } = await supabase
+        // Fetch all meetings where user is a participant
+        const { data: allMeetings, error } = await supabase
             .from("meetings")
             .select("*")
             .in("id", meetingIds)
-            .gte("date", today)
             .order("date", { ascending: true })
-            .order("start_time", { ascending: true })
-            .limit(3);
+            .order("start_time", { ascending: true });
 
         if (error) {
             console.error("Error fetching meetings:", error);
-        } else {
-            setUpcomingMeetings(data || []);
+            return;
         }
-    };
 
-    const fetchAttendanceHistory = async () => {
+        // Get attendance records for these meetings
+        const { data: attendanceData } = await supabase
+            .from("attendance")
+            .select("meeting_id, user_id")
+            .eq("user_id", user.id)
+            .in("meeting_id", meetingIds);
+
+        const attendedMeetingIds = new Set(
+            attendanceData?.map((a) => a.meeting_id) || []
+        );
+
+        // Separate upcoming and missed meetings
+        const upcoming: Meeting[] = [];
+        const missed: Meeting[] = [];
+
+        allMeetings?.forEach((meeting) => {
+            // Create full datetime objects for accurate comparison
+            const meetingEndDateTime = new Date(
+                `${meeting.date}T${meeting.end_time}`
+            );
+            const isPast = meetingEndDateTime < now;
+
+            const hasAttended = attendedMeetingIds.has(meeting.id);
+
+            if (isPast && !hasAttended) {
+                // Meeting has passed and user didn't attend
+                missed.push(meeting);
+            } else if (!isPast) {
+                // Meeting is upcoming or today but not yet ended
+                upcoming.push(meeting);
+            }
+        });
+
+        setUpcomingMeetings(upcoming.slice(0, 5)); // Limit to 5
+        setMissedMeetings(missed);
+    }, [user?.id]);
+
+    const fetchAttendanceHistory = useCallback(async () => {
         if (!user?.id) return;
 
         const { data, error } = await supabase
@@ -115,13 +125,51 @@ export default function HomePage() {
             )
             .eq("user_id", user.id)
             .order("created_at", { ascending: false })
-            .limit(5);
+            .limit(3);
 
         if (error) {
             console.error("Error fetching attendance:", error);
         } else {
             setAttendanceHistory((data as any) || []);
         }
+    }, [user?.id]);
+
+    const loadData = useCallback(async () => {
+        try {
+            await Promise.all([
+                fetchUpcomingMeetings(),
+                fetchAttendanceHistory(),
+            ]);
+        } catch (error) {
+            console.error("Error loading data:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [fetchUpcomingMeetings, fetchAttendanceHistory]);
+
+    // Initial load
+    useEffect(() => {
+        if (user) {
+            // Refresh user data from database to get latest permissions
+            refreshUser();
+            loadData();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user?.id]);
+
+    // Refresh when screen is focused (after creating meeting)
+    useFocusEffect(
+        useCallback(() => {
+            if (user) {
+                loadData();
+            }
+        }, [user, loadData])
+    );
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await loadData();
+        setRefreshing(false);
     };
 
     const formatAttendanceDate = (dateString: string) => {
@@ -152,95 +200,115 @@ export default function HomePage() {
     }
 
     return (
-        <ScrollView
-            style={styles.container}
-            refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-        >
-            {/* Header */}
-            <View style={styles.header}>
-                <View style={styles.headerLeft}>
-                    <Text style={styles.greeting}>{getGreeting()}!</Text>
-                    <Text style={styles.userName}>{user?.name || "User"}</Text>
-                </View>
-                <TouchableOpacity
-                    style={styles.profileImage}
-                    onPress={() => router.push("/profile")}
-                >
-                    {user?.profile_photo ? (
-                        <Image
-                            source={{ uri: user.profile_photo }}
-                            style={styles.avatar}
-                        />
-                    ) : (
-                        <View style={styles.avatarPlaceholder}>
-                            <Text style={styles.avatarText}>
-                                {user?.name?.charAt(0).toUpperCase() || "?"}
-                            </Text>
-                        </View>
-                    )}
-                </TouchableOpacity>
-            </View>
-
-            {/* Separator */}
-            <View style={styles.separator} />
-
-            {/* Upcoming Meetings Section */}
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>
-                    Rapat Yang Harus Diikuti
-                </Text>
-
-                {upcomingMeetings.length > 0 ? (
-                    upcomingMeetings.map((meeting) => (
-                        <UpcomingMeetingCard
-                            key={meeting.id}
-                            meeting={meeting}
-                        />
-                    ))
-                ) : (
-                    <EmptyState
-                        icon="calendar-outline"
-                        title="Tidak ada rapat yang akan datang"
+        <View style={styles.wrapper}>
+            <ScrollView
+                style={styles.container}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
                     />
-                )}
-            </View>
-
-            {/* Attendance History Section */}
-            <View style={styles.section}>
-                <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Riwayat Presensi</Text>
+                }
+            >
+                {/* Header */}
+                <View style={styles.header}>
+                    <View style={styles.headerLeft}>
+                        <Text style={styles.greeting}>{getGreeting()}!</Text>
+                        <Text style={styles.userName}>
+                            {user?.name || "User"}
+                        </Text>
+                    </View>
                     <TouchableOpacity
-                        onPress={() => router.push("/(tabs)/history")}
+                        style={styles.profileImage}
+                        onPress={() => router.push("/profile")}
                     >
-                        <Text style={styles.seeAllText}>Selengkapnya →</Text>
+                        {user?.profile_photo ? (
+                            <Image
+                                source={{ uri: user.profile_photo }}
+                                style={styles.avatar}
+                            />
+                        ) : (
+                            <View style={styles.avatarPlaceholder}>
+                                <Text style={styles.avatarText}>
+                                    {user?.name?.charAt(0).toUpperCase() || "?"}
+                                </Text>
+                            </View>
+                        )}
                     </TouchableOpacity>
                 </View>
 
-                {attendanceHistory.length > 0 ? (
-                    attendanceHistory.map((record: any, index: number) => (
-                        <MeetingCard
-                            key={record?.id || index}
-                            meeting={record.meeting}
-                            showAttendanceInfo
-                            attendanceDate={formatAttendanceDate(
-                                record.created_at
-                            )}
+                {/* Separator */}
+                <View style={styles.separator} />
+
+                {/* Upcoming Meetings Section */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>
+                        Rapat Yang Harus Diikuti{" "}
+                        {upcomingMeetings.length > 0
+                            ? `(${upcomingMeetings.length})`
+                            : ""}
+                    </Text>
+
+                    {upcomingMeetings.length > 0 ? (
+                        upcomingMeetings.map((meeting) => (
+                            <UpcomingMeetingCard
+                                key={meeting.id}
+                                meeting={meeting}
+                            />
+                        ))
+                    ) : (
+                        <EmptyState
+                            icon="calendar-outline"
+                            title="Tidak ada rapat yang akan datang"
                         />
-                    ))
+                    )}
+                </View>
+
+                {/* Missed Meetings Section */}
+
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>
+                        Rapat Yang Anda Lewatkan
+                    </Text>
+
+                    {missedMeetings.map((meeting) => (
+                        <MeetingCard
+                            key={meeting.id}
+                            meeting={meeting}
+                            showMissedBadge
+                        />
+                    ))}
+                </View>
+                {missedMeetings.length > 0 ? (
+                    <View style={styles.separator} />
                 ) : (
                     <EmptyState
                         icon="checkmark-circle-outline"
-                        title="Belum ada riwayat presensi"
+                        title="Tidak ada rapat yang terlewat"
                     />
                 )}
-            </View>
-        </ScrollView>
+            </ScrollView>
+
+            {/* FAB - Floating Action Button */}
+            {user?.can_create_meeting && (
+                <TouchableOpacity
+                    style={styles.fab}
+                    onPress={() => router.push("/create-meeting")}
+                    activeOpacity={0.8}
+                >
+                    <Ionicons name="add" size={28} color="#fff" />
+                    <Text style={styles.fabText}>Buat Rapat</Text>
+                </TouchableOpacity>
+            )}
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
+    wrapper: {
+        flex: 1,
+        backgroundColor: Colors.bgLight.backgroundColor,
+    },
     container: {
         flex: 1,
         backgroundColor: Colors.bgLight.backgroundColor,
@@ -327,5 +395,27 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: Colors.blue,
         fontWeight: "500",
+    },
+    fab: {
+        position: "absolute",
+        right: 20,
+        bottom: 40,
+        backgroundColor: Colors.green,
+        flexDirection: "row",
+        alignItems: "center",
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        borderRadius: 28,
+        elevation: 6,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+    },
+    fabText: {
+        color: "#fff",
+        fontSize: 12,
+        fontWeight: "600",
+        marginLeft: 8,
     },
 });

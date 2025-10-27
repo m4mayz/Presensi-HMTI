@@ -9,6 +9,7 @@ interface MeetingCardProps {
     meeting: Meeting;
     showAttendanceInfo?: boolean;
     attendanceDate?: string;
+    showMissedBadge?: boolean;
     onPress?: () => void;
 }
 
@@ -16,6 +17,7 @@ export default function MeetingCard({
     meeting,
     showAttendanceInfo = false,
     attendanceDate,
+    showMissedBadge = false,
     onPress,
 }: MeetingCardProps) {
     const formatDate = (dateString: string) => {
@@ -68,9 +70,15 @@ export default function MeetingCard({
         <TouchableOpacity style={styles.card} onPress={handlePress}>
             <View style={styles.cardHeader}>
                 <Text style={styles.cardTitle}>{meeting.title}</Text>
-                <View style={styles.statusBadge}>
-                    <Text style={styles.statusText}>Hadir</Text>
-                </View>
+                {showMissedBadge ? (
+                    <View style={styles.missedBadge}>
+                        <Text style={styles.statusText}>Terlewat</Text>
+                    </View>
+                ) : (
+                    <View style={styles.statusBadge}>
+                        <Text style={styles.statusText}>Hadir</Text>
+                    </View>
+                )}
             </View>
 
             <View style={styles.infoRow}>
@@ -132,6 +140,12 @@ const styles = StyleSheet.create({
     },
     statusBadge: {
         backgroundColor: Colors.green,
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: 12,
+    },
+    missedBadge: {
+        backgroundColor: "#EF4444",
         paddingHorizontal: 12,
         paddingVertical: 4,
         borderRadius: 12,

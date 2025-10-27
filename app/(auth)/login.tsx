@@ -1,10 +1,13 @@
 import Colors from "@/constants/Colors";
 import { useAuth } from "@/hooks/useAuth";
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
+    ActivityIndicator,
     Alert,
     Image,
+    Keyboard,
     KeyboardAvoidingView,
     Linking,
     Platform,
@@ -12,12 +15,14 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
+    TouchableWithoutFeedback,
     View,
 } from "react-native";
 
 const LoginPage: React.FC = () => {
     const [nim, setNim] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const { signIn } = useAuth();
 
@@ -84,73 +89,113 @@ const LoginPage: React.FC = () => {
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={styles.container}
         >
-            <View style={styles.content}>
-                {/* Logo */}
-                <View style={styles.logoContainer}>
-                    <Image
-                        source={require("@/assets/images/icon.png")}
-                        style={styles.logo}
-                        resizeMode="contain"
-                    />
-                </View>
-
-                {/* Title */}
-                <Text style={styles.title}>Presensi Rapat</Text>
-                <Text style={styles.subtitle}>
-                    Silakan login dengan NIM Anda
-                </Text>
-
-                {/* Login Form */}
-                <View style={styles.formContainer}>
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>NIM</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Masukkan NIM"
-                            placeholderTextColor="#9CA3AF"
-                            value={nim}
-                            onChangeText={setNim}
-                            keyboardType="numeric"
-                            autoCapitalize="none"
-                            editable={!loading}
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={styles.content}>
+                    {/* Logo */}
+                    <View style={styles.logoContainer}>
+                        <Image
+                            source={require("@/assets/images/icon.png")}
+                            style={styles.logo}
+                            resizeMode="contain"
                         />
                     </View>
 
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Password</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Masukkan password"
-                            placeholderTextColor="#9CA3AF"
-                            value={password}
-                            onChangeText={setPassword}
-                            secureTextEntry
-                            autoCapitalize="none"
-                            editable={!loading}
-                        />
+                    {/* Title */}
+                    <Text style={styles.title}>Presensi Rapat</Text>
+                    <Text style={styles.subtitle}>
+                        Silakan login dengan NIM Anda
+                    </Text>
+
+                    {/* Login Form */}
+                    <View style={styles.formContainer}>
+                        <View style={styles.inputGroup}>
+                            <Text style={styles.label}>NIM</Text>
+                            <View style={styles.inputContainer}>
+                                <Ionicons
+                                    name="person-outline"
+                                    size={20}
+                                    color="#64748B"
+                                    style={styles.inputIcon}
+                                />
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Masukkan NIM"
+                                    placeholderTextColor="#9CA3AF"
+                                    value={nim}
+                                    onChangeText={setNim}
+                                    keyboardType="numeric"
+                                    autoCapitalize="none"
+                                    editable={!loading}
+                                />
+                            </View>
+                        </View>
+
+                        <View style={styles.inputGroup}>
+                            <Text style={styles.label}>Password</Text>
+                            <View style={styles.inputContainer}>
+                                <Ionicons
+                                    name="lock-closed-outline"
+                                    size={20}
+                                    color="#64748B"
+                                    style={styles.inputIcon}
+                                />
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Masukkan password"
+                                    placeholderTextColor="#9CA3AF"
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    secureTextEntry={!showPassword}
+                                    autoCapitalize="none"
+                                    editable={!loading}
+                                />
+                                <TouchableOpacity
+                                    onPress={() =>
+                                        setShowPassword(!showPassword)
+                                    }
+                                    style={styles.eyeIcon}
+                                >
+                                    <Ionicons
+                                        name={
+                                            showPassword
+                                                ? "eye-outline"
+                                                : "eye-off-outline"
+                                        }
+                                        size={20}
+                                        color="#64748B"
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+                        <TouchableOpacity
+                            style={[
+                                styles.loginButton,
+                                loading && styles.loginButtonDisabled,
+                            ]}
+                            onPress={handleLogin}
+                            disabled={loading}
+                        >
+                            {loading ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Text style={styles.loginButtonText}>
+                                    Login
+                                </Text>
+                            )}
+                        </TouchableOpacity>
+
+                        <TouchableOpacity onPress={handleForgotPassword}>
+                            <Text style={styles.forgotPassword}>
+                                Lupa password?{" "}
+                                <Text style={styles.adminLink}>
+                                    Hubungi admin
+                                </Text>
+                            </Text>
+                        </TouchableOpacity>
                     </View>
-
-                    <TouchableOpacity
-                        style={[
-                            styles.loginButton,
-                            loading && styles.loginButtonDisabled,
-                        ]}
-                        onPress={handleLogin}
-                        disabled={loading}
-                    >
-                        <Text style={styles.loginButtonText}>
-                            {loading ? "Loading..." : "Login"}
-                        </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={handleForgotPassword}>
-                        <Text style={styles.forgotPassword}>
-                            Lupa password?{" "}
-                            <Text style={styles.adminLink}>Hubungi admin</Text>
-                        </Text>
-                    </TouchableOpacity>
                 </View>
-            </View>
+            </TouchableWithoutFeedback>
         </KeyboardAvoidingView>
     );
 };
@@ -211,34 +256,45 @@ const styles = StyleSheet.create({
         color: "#1F2937",
         marginBottom: 8,
     },
-    input: {
-        backgroundColor: "#F3F4F6",
-        borderRadius: 16,
-        paddingHorizontal: 16,
-        paddingVertical: 14,
-        fontSize: 16,
-        color: Colors.bgLight.textColor,
+    inputContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#F8FAFC",
+        borderRadius: 12,
         borderWidth: 1,
-        borderColor: "#E5E7EB",
+        borderColor: "#E2E8F0",
+        paddingHorizontal: 12,
+    },
+    inputIcon: {
+        marginRight: 8,
+    },
+    input: {
+        flex: 1,
+        height: 48,
+        fontSize: 15,
+        color: Colors.bgLight.textColor,
+    },
+    eyeIcon: {
+        padding: 8,
     },
     loginButton: {
         backgroundColor: Colors.button.enable,
-        borderRadius: 16,
-        paddingVertical: 16,
+        borderRadius: 12,
+        height: 52,
+        justifyContent: "center",
         alignItems: "center",
         marginTop: 8,
         marginBottom: 16,
-        shadowColor: "#2563EB",
-        shadowOffset: {
-            width: 0,
-            height: 4,
-        },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 4,
+        elevation: 2,
+        shadowColor: Colors.blue,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
     },
     loginButtonDisabled: {
-        backgroundColor: Colors.button.disable,
+        backgroundColor: "#94A3B8",
+        elevation: 0,
+        shadowOpacity: 0,
     },
     loginButtonText: {
         color: "#FFFFFF",

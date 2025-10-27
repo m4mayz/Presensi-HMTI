@@ -1,17 +1,20 @@
 import PageHeader from "@/components/PageHeader";
 import Colors from "@/constants/Colors";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
 import { Meeting } from "@/types/database.types";
 import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
     ActivityIndicator,
+    Alert,
     Image,
     RefreshControl,
     ScrollView,
     StyleSheet,
     Text,
+    TouchableOpacity,
     View,
 } from "react-native";
 
@@ -34,6 +37,7 @@ interface ParticipantWithUser {
 
 export default function MeetingDetailPage() {
     const { id } = useLocalSearchParams();
+    const { user } = useAuth();
     const [meeting, setMeeting] = useState<Meeting | null>(null);
     const [participants, setParticipants] = useState<ParticipantWithUser[]>([]);
     const [loading, setLoading] = useState(true);
@@ -115,6 +119,13 @@ export default function MeetingDetailPage() {
         loadMeetingDetails();
     }, [loadMeetingDetails]);
 
+    // Refresh when screen is focused (after adding/removing participants)
+    useFocusEffect(
+        useCallback(() => {
+            loadMeetingDetails();
+        }, [loadMeetingDetails])
+    );
+
     const onRefresh = async () => {
         setRefreshing(true);
         await loadMeetingDetails();
@@ -166,6 +177,30 @@ export default function MeetingDetailPage() {
 
     const isUserAttended = (participant: ParticipantWithUser) => {
         return participant.attendance && participant.attendance.length > 0;
+    };
+
+    const isMeetingPassed = () => {
+        if (!meeting) return false;
+        const now = new Date();
+        const meetingEndDateTime = new Date(
+            `${meeting.date}T${meeting.end_time}`
+        );
+        return meetingEndDateTime < now;
+    };
+
+    const isCreator = () => {
+        return meeting?.created_by === user?.id;
+    };
+
+    const handleShowQRCode = () => {
+        Alert.alert("QR Code", "Fitur QR Code akan segera tersedia", [
+            { text: "OK" },
+        ]);
+        // TODO: Implement QR Code generation and display
+    };
+
+    const handleAddParticipant = () => {
+        router.push(`/add-participants/${id}` as any);
     };
 
     if (loading) {
@@ -227,6 +262,37 @@ export default function MeetingDetailPage() {
                         {meeting.location || "Belum ditentukan"}
                     </Text>
                 </View>
+
+                {/* Action Buttons - Only for Creator */}
+                {isCreator() && (
+                    <View style={styles.actionButtonsContainer}>
+                        <TouchableOpacity
+                            style={[styles.actionButton, styles.qrButton]}
+                            onPress={handleShowQRCode}
+                        >
+                            <Ionicons
+                                name="qr-code-outline"
+                                size={20}
+                                color="#fff"
+                            />
+                            <Text style={styles.actionButtonText}>QR Code</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.actionButton, styles.addButton]}
+                            onPress={handleAddParticipant}
+                        >
+                            <Ionicons
+                                name="person-add-outline"
+                                size={20}
+                                color="#fff"
+                            />
+                            <Text style={styles.actionButtonText}>
+                                Tambah Peserta
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
             </View>
 
             {/* Attendance List - Scrollable */}
@@ -296,6 +362,17 @@ export default function MeetingDetailPage() {
                                 >
                                     <Text style={styles.statusTextAttended}>
                                         Hadir
+                                    </Text>
+                                </View>
+                            ) : isMeetingPassed() ? (
+                                <View
+                                    style={[
+                                        styles.statusBadge,
+                                        styles.statusMissed,
+                                    ]}
+                                >
+                                    <Text style={styles.statusTextMissed}>
+                                        Terlewat
                                     </Text>
                                 </View>
                             ) : (
@@ -413,6 +490,7 @@ const styles = StyleSheet.create({
     participantScrollView: {
         flex: 1,
         backgroundColor: Colors.bgLight.backgroundColor,
+        marginBottom: 40,
     },
     participantScrollContent: {
         paddingHorizontal: 20,
@@ -474,6 +552,9 @@ const styles = StyleSheet.create({
     statusNotAttended: {
         backgroundColor: "#F1F5F9",
     },
+    statusMissed: {
+        backgroundColor: "#EF4444",
+    },
     statusTextAttended: {
         fontSize: 12,
         fontWeight: "600",
@@ -484,6 +565,11 @@ const styles = StyleSheet.create({
         fontWeight: "600",
         color: "#64748B",
     },
+    statusTextMissed: {
+        fontSize: 12,
+        fontWeight: "600",
+        color: "#fff",
+    },
     emptyState: {
         alignItems: "center",
         justifyContent: "center",
@@ -493,5 +579,30 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: "#94A3B8",
         marginTop: 12,
+    },
+    actionButtonsContainer: {
+        flexDirection: "row",
+        gap: 12,
+        marginTop: 16,
+    },
+    actionButton: {
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        paddingVertical: 12,
+        borderRadius: 12,
+        gap: 8,
+    },
+    qrButton: {
+        backgroundColor: "rgba(255, 255, 255, 0.25)",
+    },
+    addButton: {
+        backgroundColor: "rgba(255, 255, 255, 0.25)",
+    },
+    actionButtonText: {
+        fontSize: 14,
+        fontWeight: "600",
+        color: "#fff",
     },
 });
