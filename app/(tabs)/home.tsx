@@ -172,17 +172,6 @@ export default function HomePage() {
         setRefreshing(false);
     };
 
-    const formatAttendanceDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString("id-ID", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-        });
-    };
-
     const getGreeting = () => {
         const hour = new Date().getHours();
         if (hour < 10) return "Selamat Pagi";
@@ -248,7 +237,6 @@ export default function HomePage() {
                             ? `(${upcomingMeetings.length})`
                             : ""}
                     </Text>
-
                     {upcomingMeetings.length > 0 ? (
                         upcomingMeetings.map((meeting) => (
                             <UpcomingMeetingCard
@@ -270,23 +258,21 @@ export default function HomePage() {
                     <Text style={styles.sectionTitle}>
                         Rapat Yang Anda Lewatkan
                     </Text>
-
-                    {missedMeetings.map((meeting) => (
-                        <MeetingCard
-                            key={meeting.id}
-                            meeting={meeting}
-                            showMissedBadge
+                    {missedMeetings.length > 0 ? (
+                        missedMeetings.map((meeting) => (
+                            <MeetingCard
+                                key={meeting.id}
+                                meeting={meeting}
+                                showMissedBadge
+                            />
+                        ))
+                    ) : (
+                        <EmptyState
+                            icon="checkmark-circle-outline"
+                            title="Tidak ada rapat yang terlewat"
                         />
-                    ))}
+                    )}
                 </View>
-                {missedMeetings.length > 0 ? (
-                    <View style={styles.separator} />
-                ) : (
-                    <EmptyState
-                        icon="checkmark-circle-outline"
-                        title="Tidak ada rapat yang terlewat"
-                    />
-                )}
             </ScrollView>
 
             {/* FAB - Floating Action Button */}

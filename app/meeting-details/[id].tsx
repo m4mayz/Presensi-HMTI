@@ -3,7 +3,7 @@ import Colors from "@/constants/Colors";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
 import { Meeting } from "@/types/database.types";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, Octicons } from "@expo/vector-icons";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
@@ -203,6 +203,92 @@ export default function MeetingDetailPage() {
         router.push(`/add-participants/${id}` as any);
     };
 
+    const handleEditMeeting = () => {
+        router.push(`/edit-meeting/${id}` as any);
+    };
+
+    const handleDeleteMeeting = () => {
+        if (!id || Array.isArray(id)) return;
+
+        Alert.alert(
+            "Hapus Rapat",
+            "Apakah Anda yakin ingin menghapus rapat ini? Semua data peserta dan presensi akan ikut terhapus.",
+            [
+                {
+                    text: "Batal",
+                    style: "cancel",
+                },
+                {
+                    text: "Hapus",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            // Delete attendance records first
+                            const { error: attendanceError } = await supabase
+                                .from("attendance")
+                                .delete()
+                                .eq("meeting_id", id);
+
+                            if (attendanceError) {
+                                console.error(
+                                    "Error deleting attendance:",
+                                    attendanceError
+                                );
+                            }
+
+                            // Delete participants
+                            const { error: participantsError } = await supabase
+                                .from("meeting_participants")
+                                .delete()
+                                .eq("meeting_id", id);
+
+                            if (participantsError) {
+                                console.error(
+                                    "Error deleting participants:",
+                                    participantsError
+                                );
+                            }
+
+                            // Delete meeting
+                            const { error: meetingError } = await supabase
+                                .from("meetings")
+                                .delete()
+                                .eq("id", id);
+
+                            if (meetingError) {
+                                console.error(
+                                    "Error deleting meeting:",
+                                    meetingError
+                                );
+                                Alert.alert(
+                                    "Error",
+                                    "Gagal menghapus rapat: " +
+                                        meetingError.message
+                                );
+                                return;
+                            }
+
+                            Alert.alert("Berhasil", "Rapat berhasil dihapus!", [
+                                {
+                                    text: "OK",
+                                    onPress: () => {
+                                        router.replace("/(tabs)/home");
+                                    },
+                                },
+                            ]);
+                        } catch (error) {
+                            console.error("Error deleting meeting:", error);
+                            Alert.alert(
+                                "Error",
+                                "Terjadi kesalahan saat menghapus rapat"
+                            );
+                        }
+                    },
+                },
+            ]
+        );
+    };
+
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
@@ -225,6 +311,28 @@ export default function MeetingDetailPage() {
 
             {/* Meeting Info Card - Fixed */}
             <View style={styles.meetingInfoCard}>
+                {/* Edit & Delete Buttons - Top Right (Only for Creator) */}
+                {isCreator() && (
+                    <View style={styles.topActionButtons}>
+                        <TouchableOpacity
+                            style={styles.editButtonTopRight}
+                            onPress={handleEditMeeting}
+                        >
+                            <Octicons name="pencil" size={20} color="#fff" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.deleteButtonTopRight}
+                            onPress={handleDeleteMeeting}
+                        >
+                            <Ionicons
+                                name="trash-outline"
+                                size={20}
+                                color="#fff"
+                            />
+                        </TouchableOpacity>
+                    </View>
+                )}
+
                 <Text style={styles.meetingTitle}>{meeting.title}</Text>
 
                 <View style={styles.infoRow}>
@@ -604,5 +712,29 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: "600",
         color: "#fff",
+    },
+    topActionButtons: {
+        position: "absolute",
+        top: 16,
+        right: 16,
+        flexDirection: "row",
+        gap: 8,
+        zIndex: 10,
+    },
+    editButtonTopRight: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: "rgba(255, 255, 255, 0.25)",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    deleteButtonTopRight: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: "rgba(239, 68, 68, 0.5)",
+        justifyContent: "center",
+        alignItems: "center",
     },
 });
