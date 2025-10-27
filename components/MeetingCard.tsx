@@ -1,19 +1,22 @@
 import Colors from "@/constants/Colors";
 import { Meeting } from "@/types/database.types";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface MeetingCardProps {
     meeting: Meeting;
     showAttendanceInfo?: boolean;
     attendanceDate?: string;
+    onPress?: () => void;
 }
 
 export default function MeetingCard({
     meeting,
     showAttendanceInfo = false,
     attendanceDate,
+    onPress,
 }: MeetingCardProps) {
     const formatDate = (dateString: string) => {
         const days = [
@@ -53,8 +56,16 @@ export default function MeetingCard({
         return timeString.substring(0, 5) + " WIB";
     };
 
+    const handlePress = () => {
+        if (onPress) {
+            onPress();
+        } else {
+            router.push(`/meeting-details/${meeting.id}` as any);
+        }
+    };
+
     return (
-        <View style={styles.card}>
+        <TouchableOpacity style={styles.card} onPress={handlePress}>
             <View style={styles.cardHeader}>
                 <Text style={styles.cardTitle}>{meeting.title}</Text>
                 <View style={styles.statusBadge}>
@@ -90,7 +101,7 @@ export default function MeetingCard({
                     </Text>
                 </>
             )}
-        </View>
+        </TouchableOpacity>
     );
 }
 

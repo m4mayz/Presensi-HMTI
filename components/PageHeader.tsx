@@ -22,7 +22,7 @@ export default function PageHeader({
                     style={styles.backButton}
                     onPress={() => router.back()}
                 >
-                    <Ionicons name="arrow-back" size={24} color="white" />
+                    <Ionicons name="arrow-back" size={20} color="white" />
                 </TouchableOpacity>
             )}
             <View style={styles.headerContent}>

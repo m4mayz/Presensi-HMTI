@@ -174,10 +174,11 @@ export default function HomePage() {
                             style={styles.avatar}
                         />
                     ) : (
-                        <Image
-                            source={require("@/assets/images/icon.png")}
-                            style={styles.avatar}
-                        />
+                        <View style={styles.avatarPlaceholder}>
+                            <Text style={styles.avatarText}>
+                                {user?.name?.charAt(0).toUpperCase() || "?"}
+                            </Text>
+                        </View>
                     )}
                 </TouchableOpacity>
             </View>
@@ -235,8 +236,6 @@ export default function HomePage() {
                     />
                 )}
             </View>
-
-            <View style={{ height: 40 }} />
         </ScrollView>
     );
 }
@@ -289,6 +288,18 @@ const styles = StyleSheet.create({
     avatar: {
         width: "100%",
         height: "100%",
+    },
+    avatarPlaceholder: {
+        width: "100%",
+        height: "100%",
+        backgroundColor: Colors.blue,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    avatarText: {
+        fontSize: 20,
+        fontWeight: "600",
+        color: "#fff",
     },
     separator: {
         height: 1,

@@ -51,10 +51,11 @@ export default function ProfilePage() {
                             style={styles.avatar}
                         />
                     ) : (
-                        <Image
-                            source={require("@/assets/images/icon.png")}
-                            style={styles.avatar}
-                        />
+                        <View style={styles.avatarPlaceholder}>
+                            <Text style={styles.avatarText}>
+                                {user?.name?.charAt(0).toUpperCase() || "?"}
+                            </Text>
+                        </View>
                     )}
                     <TouchableOpacity style={styles.cameraButton}>
                         <Ionicons name="camera" size={20} color="#fff" />
@@ -150,6 +151,21 @@ const styles = StyleSheet.create({
         borderRadius: 60,
         borderWidth: 4,
         borderColor: "#fff",
+    },
+    avatarPlaceholder: {
+        width: 120,
+        height: 120,
+        borderRadius: 60,
+        backgroundColor: "#fff",
+        borderWidth: 4,
+        borderColor: "#fff",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    avatarText: {
+        fontSize: 48,
+        fontWeight: "700",
+        color: Colors.blue,
     },
     cameraButton: {
         position: "absolute",

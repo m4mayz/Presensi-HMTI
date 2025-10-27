@@ -1,0 +1,497 @@
+import PageHeader from "@/components/PageHeader";
+import Colors from "@/constants/Colors";
+import { supabase } from "@/lib/supabase";
+import { Meeting } from "@/types/database.types";
+import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+    ActivityIndicator,
+    Image,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
+} from "react-native";
+
+interface ParticipantWithUser {
+    id: string;
+    user_id: string;
+    meeting_id: string;
+    is_required: boolean;
+    user?: {
+        id: string;
+        name: string;
+        nim: string;
+        divisi: string;
+        profile_photo?: string;
+    };
+    attendance?: {
+        status: string;
+    }[];
+}
+
+export default function MeetingDetailPage() {
+    const { id } = useLocalSearchParams();
+    const [meeting, setMeeting] = useState<Meeting | null>(null);
+    const [participants, setParticipants] = useState<ParticipantWithUser[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+
+    const loadMeetingDetails = useCallback(async () => {
+        if (!id || Array.isArray(id)) return;
+
+        try {
+            // Fetch meeting details
+            const { data: meetingData, error: meetingError } = await supabase
+                .from("meetings")
+                .select("*")
+                .eq("id", id)
+                .single();
+
+            if (meetingError) {
+                console.error("Error fetching meeting:", meetingError);
+                return;
+            }
+
+            setMeeting(meetingData);
+
+            // Fetch participants with user info
+            const { data: participantsData, error: participantsError } =
+                await supabase
+                    .from("meeting_participants")
+                    .select(
+                        `
+                        *,
+                        user:users(*)
+                    `
+                    )
+                    .eq("meeting_id", id);
+
+            if (participantsError) {
+                console.error(
+                    "Error fetching participants:",
+                    participantsError
+                );
+                return;
+            }
+
+            // Fetch attendance records for this meeting
+            const { data: attendanceData, error: attendanceError } =
+                await supabase
+                    .from("attendance")
+                    .select("user_id, status")
+                    .eq("meeting_id", id);
+
+            if (attendanceError) {
+                console.error("Error fetching attendance:", attendanceError);
+            }
+
+            // Merge attendance data with participants
+            const participantsWithAttendance = (participantsData as any[]).map(
+                (participant) => {
+                    const attendance = attendanceData?.find(
+                        (att) => att.user_id === participant.user_id
+                    );
+                    return {
+                        ...participant,
+                        attendance: attendance
+                            ? [{ status: attendance.status }]
+                            : [],
+                    };
+                }
+            );
+
+            setParticipants(participantsWithAttendance || []);
+        } catch (error) {
+            console.error("Error loading meeting details:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [id]);
+
+    useEffect(() => {
+        loadMeetingDetails();
+    }, [loadMeetingDetails]);
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await loadMeetingDetails();
+        setRefreshing(false);
+    };
+
+    const formatDate = (dateString: string) => {
+        const days = [
+            "Minggu",
+            "Senin",
+            "Selasa",
+            "Rabu",
+            "Kamis",
+            "Jumat",
+            "Sabtu",
+        ];
+        const date = new Date(dateString);
+        const dayName = days[date.getDay()];
+        const day = date.getDate();
+        const monthNames = [
+            "Januari",
+            "Februari",
+            "Maret",
+            "April",
+            "Mei",
+            "Juni",
+            "Juli",
+            "Agustus",
+            "September",
+            "Oktober",
+            "November",
+            "Desember",
+        ];
+        const month = monthNames[date.getMonth()];
+        const year = date.getFullYear();
+
+        return `${dayName}, ${day} ${month} ${year}`;
+    };
+
+    const formatTime = (timeString: string) => {
+        return timeString.substring(0, 5) + " WIB";
+    };
+
+    const getAttendedCount = () => {
+        return participants.filter(
+            (p) => p.attendance && p.attendance.length > 0
+        ).length;
+    };
+
+    const isUserAttended = (participant: ParticipantWithUser) => {
+        return participant.attendance && participant.attendance.length > 0;
+    };
+
+    if (loading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={Colors.blue} />
+            </View>
+        );
+    }
+
+    if (!meeting) {
+        return (
+            <View style={styles.loadingContainer}>
+                <Text style={styles.errorText}>Rapat tidak ditemukan</Text>
+            </View>
+        );
+    }
+
+    return (
+        <View style={styles.container}>
+            <PageHeader title="Detail Rapat" showBackButton />
+
+            {/* Meeting Info Card - Fixed */}
+            <View style={styles.meetingInfoCard}>
+                <Text style={styles.meetingTitle}>{meeting.title}</Text>
+
+                <View style={styles.infoRow}>
+                    <View style={styles.iconContainer}>
+                        <Ionicons
+                            name="calendar-outline"
+                            size={20}
+                            color="#fff"
+                        />
+                    </View>
+                    <Text style={styles.infoText}>
+                        {formatDate(meeting.date)}
+                    </Text>
+                </View>
+
+                <View style={styles.infoRow}>
+                    <View style={styles.iconContainer}>
+                        <Ionicons name="time-outline" size={20} color="#fff" />
+                    </View>
+                    <Text style={styles.infoText}>
+                        {formatTime(meeting.start_time)} -{" "}
+                        {formatTime(meeting.end_time)}
+                    </Text>
+                </View>
+
+                <View style={styles.infoRow}>
+                    <View style={styles.iconContainer}>
+                        <Ionicons
+                            name="location-outline"
+                            size={20}
+                            color="#fff"
+                        />
+                    </View>
+                    <Text style={styles.infoText}>
+                        {meeting.location || "Belum ditentukan"}
+                    </Text>
+                </View>
+            </View>
+
+            {/* Attendance List - Scrollable */}
+            <View style={styles.attendanceSection}>
+                <View style={styles.attendanceHeader}>
+                    <Text style={styles.sectionTitle}>Daftar Kehadiran</Text>
+                    <View style={styles.attendanceBadge}>
+                        <Text style={styles.attendanceBadgeText}>
+                            {getAttendedCount()}/{participants.length} hadir
+                        </Text>
+                    </View>
+                </View>
+
+                <ScrollView
+                    style={styles.participantScrollView}
+                    contentContainerStyle={styles.participantScrollContent}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={onRefresh}
+                        />
+                    }
+                    showsVerticalScrollIndicator={true}
+                >
+                    {participants.map((participant, index) => (
+                        <View
+                            key={participant.id}
+                            style={[styles.participantCard]}
+                        >
+                            <View style={styles.participantAvatar}>
+                                {participant.user?.profile_photo ? (
+                                    <Image
+                                        source={{
+                                            uri: participant.user.profile_photo,
+                                        }}
+                                        style={styles.avatarImage}
+                                    />
+                                ) : (
+                                    <View style={styles.avatarPlaceholder}>
+                                        <Text style={styles.avatarText}>
+                                            {participant.user?.name
+                                                ?.charAt(0)
+                                                .toUpperCase() || "?"}
+                                        </Text>
+                                    </View>
+                                )}
+                            </View>
+
+                            <View style={styles.participantInfo}>
+                                <Text style={styles.participantName}>
+                                    {participant.user?.name || "Unknown"}
+                                </Text>
+                                <Text style={styles.participantNim}>
+                                    {participant.user?.nim || ""}
+                                </Text>
+                                <Text style={styles.participantDivision}>
+                                    {participant.user?.divisi || ""}
+                                </Text>
+                            </View>
+
+                            {isUserAttended(participant) ? (
+                                <View
+                                    style={[
+                                        styles.statusBadge,
+                                        styles.statusAttended,
+                                    ]}
+                                >
+                                    <Text style={styles.statusTextAttended}>
+                                        Hadir
+                                    </Text>
+                                </View>
+                            ) : (
+                                <View
+                                    style={[
+                                        styles.statusBadge,
+                                        styles.statusNotAttended,
+                                    ]}
+                                >
+                                    <Text style={styles.statusTextNotAttended}>
+                                        Belum hadir
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
+                    ))}
+
+                    {participants.length === 0 && (
+                        <View style={styles.emptyState}>
+                            <Ionicons
+                                name="people-outline"
+                                size={48}
+                                color="#CBD5E1"
+                            />
+                            <Text style={styles.emptyText}>
+                                Belum ada peserta terdaftar
+                            </Text>
+                        </View>
+                    )}
+                </ScrollView>
+            </View>
+        </View>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: Colors.blue,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: Colors.bgLight.backgroundColor,
+    },
+    errorText: {
+        fontSize: 16,
+        color: "#64748B",
+    },
+    meetingInfoCard: {
+        backgroundColor: "rgba(255, 255, 255, 0.15)",
+        borderRadius: 24,
+        padding: 20,
+        marginHorizontal: 20,
+        marginBottom: 0,
+    },
+    meetingTitle: {
+        fontSize: 20,
+        fontWeight: "700",
+        color: "#fff",
+        marginBottom: 16,
+    },
+    infoRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 12,
+    },
+    iconContainer: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: "rgba(255, 255, 255, 0.2)",
+        justifyContent: "center",
+        alignItems: "center",
+        marginRight: 12,
+    },
+    infoText: {
+        fontSize: 14,
+        color: "#fff",
+        flex: 1,
+    },
+    attendanceSection: {
+        flex: 1,
+        backgroundColor: Colors.bgLight.backgroundColor,
+        borderTopLeftRadius: 24,
+        borderTopRightRadius: 24,
+        marginTop: 20,
+        overflow: "hidden",
+    },
+    attendanceHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: 20,
+        paddingBottom: 12,
+        backgroundColor: Colors.bgLight.backgroundColor,
+    },
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: "600",
+        color: Colors.bgLight.textColor,
+    },
+    attendanceBadge: {
+        backgroundColor: Colors.blue,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 12,
+    },
+    attendanceBadgeText: {
+        fontSize: 12,
+        fontWeight: "600",
+        color: "#fff",
+    },
+    participantScrollView: {
+        flex: 1,
+        backgroundColor: Colors.bgLight.backgroundColor,
+    },
+    participantScrollContent: {
+        paddingHorizontal: 20,
+    },
+    participantCard: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingVertical: 12,
+    },
+    participantAvatar: {
+        width: 48,
+        height: 48,
+        marginRight: 12,
+    },
+    avatarImage: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+    },
+    avatarPlaceholder: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: Colors.blue,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    avatarText: {
+        fontSize: 18,
+        fontWeight: "600",
+        color: "#fff",
+    },
+    participantInfo: {
+        flex: 1,
+    },
+    participantName: {
+        fontSize: 15,
+        fontWeight: "600",
+        color: Colors.bgLight.textColor,
+        marginBottom: 4,
+    },
+    participantNim: {
+        fontSize: 13,
+        color: "#64748B",
+        marginBottom: 2,
+    },
+    participantDivision: {
+        fontSize: 12,
+        color: "#94A3B8",
+    },
+    statusBadge: {
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 12,
+    },
+    statusAttended: {
+        backgroundColor: Colors.green,
+    },
+    statusNotAttended: {
+        backgroundColor: "#F1F5F9",
+    },
+    statusTextAttended: {
+        fontSize: 12,
+        fontWeight: "600",
+        color: "#fff",
+    },
+    statusTextNotAttended: {
+        fontSize: 12,
+        fontWeight: "600",
+        color: "#64748B",
+    },
+    emptyState: {
+        alignItems: "center",
+        justifyContent: "center",
+        paddingVertical: 40,
+    },
+    emptyText: {
+        fontSize: 14,
+        color: "#94A3B8",
+        marginTop: 12,
+    },
+});
