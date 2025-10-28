@@ -61,6 +61,13 @@ export default function MeetingDetailPage() {
 
             setMeeting(meetingData);
 
+            // Check if meeting has passed and update status to "terlewat" for non-attendees
+            const meetingEndDateTime = new Date(
+                `${meetingData.date}T${meetingData.end_time}`
+            );
+            const now = new Date();
+            const hasPassed = meetingEndDateTime < now;
+
             // Fetch participants with user info
             const { data: participantsData, error: participantsError } =
                 await supabase
@@ -82,7 +89,7 @@ export default function MeetingDetailPage() {
             }
 
             // Fetch attendance records for this meeting
-            const { data: attendanceData, error: attendanceError } =
+            let { data: attendanceData, error: attendanceError } =
                 await supabase
                     .from("attendance")
                     .select("user_id, status")
@@ -90,6 +97,52 @@ export default function MeetingDetailPage() {
 
             if (attendanceError) {
                 console.error("Error fetching attendance:", attendanceError);
+            }
+
+            // If meeting has passed, create "terlewat" records for non-attendees
+            if (hasPassed && participantsData) {
+                const attendedUserIds = new Set(
+                    attendanceData?.map((a) => a.user_id) || []
+                );
+
+                const missedParticipants = participantsData.filter(
+                    (p) => !attendedUserIds.has(p.user_id)
+                );
+
+                if (missedParticipants.length > 0) {
+                    const missedRecords = missedParticipants.map((p) => ({
+                        meeting_id: id,
+                        user_id: p.user_id,
+                        status: "terlewat",
+                        attendance_time: new Date().toISOString(),
+                    }));
+
+                    // Insert "terlewat" records for those who didn't attend
+                    const { error: insertError } = await supabase
+                        .from("attendance")
+                        .upsert(missedRecords, {
+                            onConflict: "meeting_id,user_id",
+                            ignoreDuplicates: false,
+                        });
+
+                    if (insertError) {
+                        console.error(
+                            "Error inserting missed attendance:",
+                            insertError
+                        );
+                    } else {
+                        // Refresh attendance data after successful insert
+                        const { data: updatedAttendanceData } = await supabase
+                            .from("attendance")
+                            .select("user_id, status")
+                            .eq("meeting_id", id);
+
+                        // Replace with fresh data, not append
+                        if (updatedAttendanceData) {
+                            attendanceData = updatedAttendanceData;
+                        }
+                    }
+                }
             }
 
             // Merge attendance data with participants
@@ -171,12 +224,27 @@ export default function MeetingDetailPage() {
 
     const getAttendedCount = () => {
         return participants.filter(
-            (p) => p.attendance && p.attendance.length > 0
+            (p) =>
+                p.attendance &&
+                p.attendance.length > 0 &&
+                p.attendance[0].status === "hadir"
         ).length;
     };
 
     const isUserAttended = (participant: ParticipantWithUser) => {
-        return participant.attendance && participant.attendance.length > 0;
+        return (
+            participant.attendance &&
+            participant.attendance.length > 0 &&
+            participant.attendance[0].status === "hadir"
+        );
+    };
+
+    const isUserMissed = (participant: ParticipantWithUser) => {
+        return (
+            participant.attendance &&
+            participant.attendance.length > 0 &&
+            participant.attendance[0].status === "terlewat"
+        );
     };
 
     const isMeetingPassed = () => {
@@ -505,6 +573,17 @@ export default function MeetingDetailPage() {
                                 >
                                     <Text style={styles.statusTextAttended}>
                                         Hadir
+                                    </Text>
+                                </View>
+                            ) : isUserMissed(participant) ? (
+                                <View
+                                    style={[
+                                        styles.statusBadge,
+                                        styles.statusMissed,
+                                    ]}
+                                >
+                                    <Text style={styles.statusTextMissed}>
+                                        Terlewat
                                     </Text>
                                 </View>
                             ) : isMeetingPassed() ? (

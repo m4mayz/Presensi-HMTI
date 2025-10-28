@@ -9,6 +9,7 @@ export default function RootLayout() {
                 <Stack.Screen name="(tabs)" />
                 <Stack.Screen name="(auth)/login" />
                 <Stack.Screen name="profile" />
+                <Stack.Screen name="about" />
                 <Stack.Screen name="change-password" />
                 <Stack.Screen name="create-meeting" />
                 <Stack.Screen name="meeting-details/[id]" />

@@ -190,6 +190,13 @@ export default function ProfilePage() {
                 />
 
                 <ProfileMenuItem
+                    icon="information-circle-outline"
+                    iconColor={Colors.blue}
+                    title="Tentang Aplikasi"
+                    onPress={() => router.push("/about")}
+                />
+
+                <ProfileMenuItem
                     icon="help-circle-outline"
                     iconColor={Colors.blue}
                     title="Bantuan"
@@ -206,16 +213,6 @@ export default function ProfilePage() {
                     isLogout
                 />
             </View>
-
-            {/* Footer */}
-            <View style={styles.footer}>
-                <Text style={styles.footerText}>Versi Aplikasi: 1.0.0</Text>
-                <Text style={styles.footerCopyright}>
-                    © 2025 KOMINFO HMTI Universitas Nusa Putra
-                </Text>
-            </View>
-
-            <View style={{ height: 100 }} />
         </ScrollView>
     );
 }
@@ -310,7 +307,7 @@ const styles = StyleSheet.create({
     },
     footer: {
         alignItems: "center",
-        marginTop: 150,
+        marginTop: 50,
     },
     footerText: {
         fontSize: 12,

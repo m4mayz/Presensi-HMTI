@@ -160,7 +160,19 @@ export default function EditMeetingPage() {
             return false;
         }
 
-        if (endTime <= startTime) {
+        // Combine date and time for accurate comparison
+        const startDateTime = new Date(selectedDate);
+        startDateTime.setHours(
+            startTime.getHours(),
+            startTime.getMinutes(),
+            0,
+            0
+        );
+
+        const endDateTime = new Date(selectedDate);
+        endDateTime.setHours(endTime.getHours(), endTime.getMinutes(), 0, 0);
+
+        if (endDateTime <= startDateTime) {
             Alert.alert(
                 "Error",
                 "Waktu selesai harus lebih besar dari waktu mulai"

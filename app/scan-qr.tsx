@@ -82,12 +82,26 @@ export default function ScanQRPage() {
                 return;
             }
 
-            // Check if meeting has ended
+            // Check if meeting time is valid
+            const meetingStartDateTime = new Date(
+                `${meeting.date}T${meeting.start_time}`
+            );
             const meetingEndDateTime = new Date(
                 `${meeting.date}T${meeting.end_time}`
             );
             const now = new Date();
 
+            // Check if meeting hasn't started yet
+            if (now < meetingStartDateTime) {
+                Alert.alert(
+                    "Rapat Belum Dimulai",
+                    "Rapat belum dimulai. Silakan scan QR Code saat rapat sudah dimulai."
+                );
+                setProcessing(false);
+                return;
+            }
+
+            // Check if meeting has ended
             if (now > meetingEndDateTime) {
                 Alert.alert(
                     "Rapat Telah Berakhir",

@@ -247,11 +247,22 @@ export default function AddParticipantsPage() {
                             }
                         }
 
-                        // Remove participants
+                        // Remove participants (except creator)
                         if (usersToRemove.length > 0) {
-                            const userIdsToRemove = usersToRemove.map(
-                                (user) => user.id
-                            );
+                            // Filter out creator from removal list (extra safety)
+                            const userIdsToRemove = usersToRemove
+                                .filter((user) => user.id !== creatorId)
+                                .map((user) => user.id);
+
+                            if (userIdsToRemove.length === 0) {
+                                // All users to remove were creator (shouldn't happen but just in case)
+                                setSaving(false);
+                                Alert.alert(
+                                    "Info",
+                                    "Pembuat rapat tidak dapat dihapus"
+                                );
+                                return;
+                            }
 
                             const { error: removeError } = await supabase
                                 .from("meeting_participants")

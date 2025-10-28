@@ -118,8 +118,20 @@ export default function CreateMeetingPage() {
             return false;
         }
 
+        // Combine date and time for accurate comparison
+        const startDateTime = new Date(selectedDate);
+        startDateTime.setHours(
+            startTime.getHours(),
+            startTime.getMinutes(),
+            0,
+            0
+        );
+
+        const endDateTime = new Date(selectedDate);
+        endDateTime.setHours(endTime.getHours(), endTime.getMinutes(), 0, 0);
+
         // Check if end time is after start time
-        if (endTime <= startTime) {
+        if (endDateTime <= startDateTime) {
             Alert.alert(
                 "Error",
                 "Waktu selesai harus lebih besar dari waktu mulai"
@@ -189,6 +201,7 @@ export default function CreateMeetingPage() {
                     meeting_id: meeting.id,
                     user_id: user.id,
                     status: "hadir",
+                    attendance_time: new Date().toISOString(),
                 });
 
             if (attendanceError) {

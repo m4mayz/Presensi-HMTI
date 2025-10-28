@@ -78,12 +78,15 @@ export default function HomePage() {
         // Get attendance records for these meetings
         const { data: attendanceData } = await supabase
             .from("attendance")
-            .select("meeting_id, user_id")
+            .select("meeting_id, user_id, status")
             .eq("user_id", user.id)
             .in("meeting_id", meetingIds);
 
+        // Only consider "hadir" status as attended
         const attendedMeetingIds = new Set(
-            attendanceData?.map((a) => a.meeting_id) || []
+            attendanceData
+                ?.filter((a) => a.status === "hadir")
+                .map((a) => a.meeting_id) || []
         );
 
         // Separate upcoming and missed meetings
