@@ -31,6 +31,7 @@ export default function AddParticipantsPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [meetingTitle, setMeetingTitle] = useState("");
+    const [creatorId, setCreatorId] = useState<string>("");
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedDivisi, setSelectedDivisi] = useState<string>("all");
     const [divisiList, setDivisiList] = useState<string[]>([]);
@@ -68,6 +69,7 @@ export default function AddParticipantsPage() {
             }
 
             setMeetingTitle(meeting.title);
+            setCreatorId(meeting.created_by);
 
             // Fetch all users
             const { data: allUsers, error: usersError } = await supabase
@@ -170,6 +172,15 @@ export default function AddParticipantsPage() {
     };
 
     const toggleUserSelection = (userId: string) => {
+        // Prevent deselecting the meeting creator
+        if (userId === creatorId) {
+            Alert.alert(
+                "Tidak Dapat Dihapus",
+                "Pembuat rapat tidak dapat dihapus dari daftar peserta"
+            );
+            return;
+        }
+
         const updatedUsers = users.map((user) =>
             user.id === userId
                 ? { ...user, isSelected: !user.isSelected }
@@ -317,11 +328,43 @@ export default function AddParticipantsPage() {
         return toAdd + toRemove;
     };
 
+    const handleSelectAll = () => {
+        // Select all users in current filtered list
+        const filteredUserIds = new Set(filteredUsers.map((u) => u.id));
+        const updatedUsers = users.map((user) =>
+            filteredUserIds.has(user.id) ? { ...user, isSelected: true } : user
+        );
+        setUsers(updatedUsers);
+        filterUsers(updatedUsers, searchQuery, selectedDivisi);
+    };
+
+    const handleDeselectAll = () => {
+        // Deselect all users in current filtered list except the creator
+        const filteredUserIds = new Set(filteredUsers.map((u) => u.id));
+        const updatedUsers = users.map((user) =>
+            filteredUserIds.has(user.id) && user.id !== creatorId
+                ? { ...user, isSelected: false }
+                : user
+        );
+        setUsers(updatedUsers);
+        filterUsers(updatedUsers, searchQuery, selectedDivisi);
+    };
+
+    const areAllFilteredSelected = () => {
+        return (
+            filteredUsers.length > 0 &&
+            filteredUsers.every((user) => user.isSelected)
+        );
+    };
+
     const renderUserItem = ({ item }: { item: UserWithSelection }) => {
+        const isCreator = item.id === creatorId;
+
         return (
             <TouchableOpacity
-                style={styles.userItem}
+                style={[styles.userItem, isCreator && styles.userItemDisabled]}
                 onPress={() => toggleUserSelection(item.id)}
+                disabled={isCreator}
             >
                 <View style={styles.userInfo}>
                     <View style={styles.avatarContainer}>
@@ -342,7 +385,16 @@ export default function AddParticipantsPage() {
                     </View>
 
                     <View style={styles.userDetails}>
-                        <Text style={styles.userName}>{item.name}</Text>
+                        <View style={styles.userNameRow}>
+                            <Text style={styles.userName}>{item.name}</Text>
+                            {isCreator && (
+                                <View style={styles.creatorBadge}>
+                                    <Text style={styles.creatorBadgeText}>
+                                        Pembuat
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
                         <Text style={styles.userNim}>NIM: {item.nim}</Text>
                         {item.divisi && (
                             <Text style={styles.userDivisi}>{item.divisi}</Text>
@@ -354,6 +406,7 @@ export default function AddParticipantsPage() {
                     style={[
                         styles.checkbox,
                         item.isSelected && styles.checkboxChecked,
+                        isCreator && styles.checkboxDisabled,
                     ]}
                 >
                     {item.isSelected && (
@@ -458,10 +511,30 @@ export default function AddParticipantsPage() {
                     <Text style={styles.listHeaderText}>
                         {filteredUsers.length} dari {users.length} user
                     </Text>
-                    {getChangesCount() > 0 && (
-                        <Text style={styles.selectedCountText}>
-                            {getChangesCount()} perubahan
-                        </Text>
+                    {filteredUsers.length > 0 && (
+                        <TouchableOpacity
+                            style={styles.selectAllButton}
+                            onPress={
+                                areAllFilteredSelected()
+                                    ? handleDeselectAll
+                                    : handleSelectAll
+                            }
+                        >
+                            <Ionicons
+                                name={
+                                    areAllFilteredSelected()
+                                        ? "checkbox"
+                                        : "checkbox-outline"
+                                }
+                                size={16}
+                                color={Colors.blue}
+                            />
+                            <Text style={styles.selectAllText}>
+                                {areAllFilteredSelected()
+                                    ? "Batal Pilih Semua"
+                                    : "Pilih Semua"}
+                            </Text>
+                        </TouchableOpacity>
                     )}
                 </View>
 
@@ -606,10 +679,19 @@ const styles = StyleSheet.create({
         fontWeight: "600",
         color: Colors.bgLight.textColor,
     },
-    selectedCountText: {
-        fontSize: 14,
+    selectAllButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 4,
+        paddingVertical: 4,
+        paddingHorizontal: 8,
+        borderRadius: 6,
+        backgroundColor: "#EFF6FF",
+    },
+    selectAllText: {
+        fontSize: 13,
         fontWeight: "600",
-        color: Colors.green,
+        color: Colors.blue,
     },
     listContent: {
         paddingBottom: 100,
@@ -627,6 +709,10 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.05,
         shadowRadius: 2,
+    },
+    userItemDisabled: {
+        opacity: 0.6,
+        backgroundColor: "#F8FAFC",
     },
     userInfo: {
         flex: 1,
@@ -652,11 +738,27 @@ const styles = StyleSheet.create({
     userDetails: {
         flex: 1,
     },
+    userNameRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+        marginBottom: 2,
+    },
     userName: {
         fontSize: 15,
         fontWeight: "600",
         color: Colors.bgLight.textColor,
-        marginBottom: 2,
+    },
+    creatorBadge: {
+        backgroundColor: Colors.blue,
+        paddingHorizontal: 8,
+        paddingVertical: 2,
+        borderRadius: 4,
+    },
+    creatorBadgeText: {
+        fontSize: 10,
+        fontWeight: "600",
+        color: "#fff",
     },
     userNim: {
         fontSize: 13,
@@ -686,6 +788,10 @@ const styles = StyleSheet.create({
     checkboxChecked: {
         backgroundColor: Colors.green,
         borderColor: Colors.green,
+    },
+    checkboxDisabled: {
+        backgroundColor: "#E2E8F0",
+        borderColor: "#CBD5E1",
     },
     footer: {
         position: "absolute",

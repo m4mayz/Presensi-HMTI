@@ -314,12 +314,20 @@ export default function MeetingDetailPage() {
                 {/* Edit & Delete Buttons - Top Right (Only for Creator) */}
                 {isCreator() && (
                     <View style={styles.topActionButtons}>
-                        <TouchableOpacity
-                            style={styles.editButtonTopRight}
-                            onPress={handleEditMeeting}
-                        >
-                            <Octicons name="pencil" size={20} color="#fff" />
-                        </TouchableOpacity>
+                        {/* Edit button - hidden when meeting passed */}
+                        {!isMeetingPassed() && (
+                            <TouchableOpacity
+                                style={styles.editButtonTopRight}
+                                onPress={handleEditMeeting}
+                            >
+                                <Octicons
+                                    name="pencil"
+                                    size={20}
+                                    color="#fff"
+                                />
+                            </TouchableOpacity>
+                        )}
+                        {/* Delete button - always visible for creator */}
                         <TouchableOpacity
                             style={styles.deleteButtonTopRight}
                             onPress={handleDeleteMeeting}
@@ -371,8 +379,8 @@ export default function MeetingDetailPage() {
                     </Text>
                 </View>
 
-                {/* Action Buttons - Only for Creator */}
-                {isCreator() && (
+                {/* Action Buttons - Only for Creator and only before meeting ends */}
+                {isCreator() && !isMeetingPassed() && (
                     <View style={styles.actionButtonsContainer}>
                         <TouchableOpacity
                             style={[styles.actionButton, styles.qrButton]}
