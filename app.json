@@ -1,46 +1,58 @@
 {
-  "expo": {
-    "name": "Presensi-HMTI",
-    "slug": "Presensi-HMTI",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "presensihmti",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
-      "package": "com.m4mayz.PresensiHMTI"
-    },
-    "web": {
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
-    },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+    "expo": {
+        "name": "Presensi-HMTI",
+        "slug": "Presensi-HMTI",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/images/icon.png",
+        "scheme": "presensihmti",
+        "userInterfaceStyle": "automatic",
+        "newArchEnabled": true,
+        "ios": {
+            "supportsTablet": true,
+            "bundleIdentifier": "com.m4mayz.PresensiHMTI",
+            "infoPlist": {
+                "ITSAppUsesNonExemptEncryption": false,
+                "NSCameraUsageDescription": "Aplikasi memerlukan akses kamera untuk scan QR Code presensi"
+            }
+        },
+        "android": {
+            "edgeToEdgeEnabled": true,
+            "predictiveBackGestureEnabled": false,
+            "package": "com.m4mayz.PresensiHMTI",
+            "permissions": ["android.permission.CAMERA"]
+        },
+        "web": {
+            "output": "static",
+            "favicon": "./assets/images/favicon.png"
+        },
+        "plugins": [
+            "expo-router",
+            [
+                "expo-camera",
+                {
+                    "cameraPermission": "Aplikasi memerlukan akses kamera untuk scan QR Code presensi"
+                }
+            ],
+            [
+                "expo-splash-screen",
+                {
+                    "image": "./assets/images/splash-icon.png",
+                    "imageWidth": 200,
+                    "resizeMode": "contain",
+                    "backgroundColor": "#ffffff"
+                }
+            ]
+        ],
+        "experiments": {
+            "typedRoutes": true,
+            "reactCompiler": true
+        },
+        "extra": {
+            "router": {},
+            "eas": {
+                "projectId": "aa6e94c1-b32f-4194-99a0-264b5e8f8cf4"
+            }
         }
-      ]
-    ],
-    "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
-    },
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "aa6e94c1-b32f-4194-99a0-264b5e8f8cf4"
-      }
     }
-  }
 }
