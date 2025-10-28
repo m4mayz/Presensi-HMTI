@@ -193,10 +193,7 @@ export default function MeetingDetailPage() {
     };
 
     const handleShowQRCode = () => {
-        Alert.alert("QR Code", "Fitur QR Code akan segera tersedia", [
-            { text: "OK" },
-        ]);
-        // TODO: Implement QR Code generation and display
+        router.push(`/qr-code/${id}` as any);
     };
 
     const handleAddParticipant = () => {
@@ -205,6 +202,10 @@ export default function MeetingDetailPage() {
 
     const handleEditMeeting = () => {
         router.push(`/edit-meeting/${id}` as any);
+    };
+
+    const handleScanQR = () => {
+        router.push("/scan-qr" as any);
     };
 
     const handleDeleteMeeting = () => {
@@ -409,6 +410,32 @@ export default function MeetingDetailPage() {
                         </TouchableOpacity>
                     </View>
                 )}
+
+                {/* Scan QR Button - For participants who haven't attended */}
+                {!isCreator() &&
+                    !isMeetingPassed() &&
+                    !isUserAttended(
+                        participants.find((p) => p.user_id === user?.id) || {
+                            id: "",
+                            user_id: "",
+                            meeting_id: "",
+                            is_required: false,
+                        }
+                    ) && (
+                        <TouchableOpacity
+                            style={styles.scanQRButton}
+                            onPress={handleScanQR}
+                        >
+                            <Ionicons
+                                name="scan-outline"
+                                size={24}
+                                color="#fff"
+                            />
+                            <Text style={styles.scanQRButtonText}>
+                                Scan QR Code untuk Presensi
+                            </Text>
+                        </TouchableOpacity>
+                    )}
             </View>
 
             {/* Attendance List - Scrollable */}
@@ -721,6 +748,26 @@ const styles = StyleSheet.create({
         fontWeight: "600",
         color: "#fff",
     },
+    scanQRButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: Colors.green,
+        paddingVertical: 14,
+        borderRadius: 12,
+        marginTop: 16,
+        gap: 8,
+        elevation: 2,
+        shadowColor: Colors.green,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+    },
+    scanQRButtonText: {
+        fontSize: 15,
+        fontWeight: "700",
+        color: "#fff",
+    },
     topActionButtons: {
         position: "absolute",
         top: 16,
@@ -733,7 +780,7 @@ const styles = StyleSheet.create({
         width: 36,
         height: 36,
         borderRadius: 18,
-        backgroundColor: "rgba(255, 255, 255, 0.25)",
+        backgroundColor: "rgba(59, 130, 246, 0.5)",
         justifyContent: "center",
         alignItems: "center",
     },

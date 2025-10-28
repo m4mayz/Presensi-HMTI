@@ -1,11 +1,12 @@
 import Colors from "@/constants/Colors";
 import { FontAwesome5, Ionicons, Octicons } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabLayout() {
     const insets = useSafeAreaInsets();
+    const router = useRouter();
 
     return (
         <Tabs
@@ -69,6 +70,12 @@ export default function TabLayout() {
                             </View>
                         </View>
                     ),
+                }}
+                listeners={{
+                    tabPress: (e) => {
+                        e.preventDefault();
+                        router.push("/scan-qr" as any);
+                    },
                 }}
             />
             <Tabs.Screen
