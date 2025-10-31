@@ -24,7 +24,14 @@
             "predictiveBackGestureEnabled": false,
             "package": "com.m4mayz.PresensiHMTI",
             "versionCode": 1,
-            "permissions": ["android.permission.CAMERA"]
+            "permissions": [
+                "android.permission.CAMERA",
+                "android.permission.POST_NOTIFICATIONS"
+            ],
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/images/icon.png",
+                "backgroundColor": "#ffffff"
+            }
         },
         "web": {
             "output": "static",
@@ -39,11 +46,18 @@
                 }
             ],
             [
+                "expo-notifications",
+                {
+                    "icon": "./assets/images/icon.png",
+                    "color": "#3B82F6",
+                    "sounds": []
+                }
+            ],
+            [
                 "expo-splash-screen",
                 {
                     "image": "./assets/images/splash-icon.png",
                     "imageWidth": 200,
-                    "resizeMode": "contain",
                     "backgroundColor": "#ffffff"
                 }
             ]

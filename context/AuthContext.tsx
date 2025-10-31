@@ -1,3 +1,4 @@
+import { registerForPushNotificationsAsync } from "@/lib/notifications";
 import { supabase } from "@/lib/supabase";
 import { User } from "@/types/database.types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -74,6 +75,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             );
 
             setUser(data);
+
+            // Request notification permissions after successful login
+            try {
+                await registerForPushNotificationsAsync();
+            } catch (notifError) {
+                console.error(
+                    "Error requesting notification permission:",
+                    notifError
+                );
+                // Don't throw error, let user continue using app
+            }
         } catch (error: any) {
             throw new Error(error.message || "Login gagal");
         }

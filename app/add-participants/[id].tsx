@@ -1,6 +1,7 @@
 import PageHeader from "@/components/PageHeader";
 import Colors from "@/constants/Colors";
 import { useAuth } from "@/hooks/useAuth";
+import { scheduleParticipantAddedNotification } from "@/lib/notifications";
 import { supabase } from "@/lib/supabase";
 import { User } from "@/types/database.types";
 import { Ionicons } from "@expo/vector-icons";
@@ -31,6 +32,8 @@ export default function AddParticipantsPage() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [meetingTitle, setMeetingTitle] = useState("");
+    const [meetingDate, setMeetingDate] = useState("");
+    const [meetingStartTime, setMeetingStartTime] = useState("");
     const [creatorId, setCreatorId] = useState<string>("");
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedDivisi, setSelectedDivisi] = useState<string>("all");
@@ -48,7 +51,7 @@ export default function AddParticipantsPage() {
             // Fetch meeting info
             const { data: meeting, error: meetingError } = await supabase
                 .from("meetings")
-                .select("title, created_by")
+                .select("title, created_by, date, start_time")
                 .eq("id", id)
                 .single();
 
@@ -69,6 +72,8 @@ export default function AddParticipantsPage() {
             }
 
             setMeetingTitle(meeting.title);
+            setMeetingDate(meeting.date);
+            setMeetingStartTime(meeting.start_time);
             setCreatorId(meeting.created_by);
 
             // Fetch all users
@@ -244,6 +249,23 @@ export default function AddParticipantsPage() {
                                 );
                                 setSaving(false);
                                 return;
+                            }
+
+                            // Send notifications to newly added participants
+                            try {
+                                for (let i = 0; i < usersToAdd.length; i++) {
+                                    await scheduleParticipantAddedNotification(
+                                        meetingTitle,
+                                        meetingDate,
+                                        meetingStartTime
+                                    );
+                                }
+                            } catch (notifError) {
+                                console.error(
+                                    "Error sending notifications:",
+                                    notifError
+                                );
+                                // Don't fail the whole operation if notification fails
                             }
                         }
 

@@ -1,6 +1,10 @@
 import PageHeader from "@/components/PageHeader";
 import Colors from "@/constants/Colors";
 import { useAuth } from "@/hooks/useAuth";
+import {
+    schedule10MinuteReminderNotification,
+    scheduleMissedMeetingNotification,
+} from "@/lib/notifications";
 import { supabase } from "@/lib/supabase";
 import { Meeting } from "@/types/database.types";
 import { Ionicons, Octicons } from "@expo/vector-icons";
@@ -162,12 +166,54 @@ export default function MeetingDetailPage() {
             );
 
             setParticipants(participantsWithAttendance || []);
+
+            // Schedule notifications for current user if they're a participant and haven't attended
+            if (user && !hasPassed) {
+                const currentUserParticipant = participantsData?.find(
+                    (p) => p.user_id === user.id
+                );
+
+                if (currentUserParticipant) {
+                    const userAttendance = attendanceData?.find(
+                        (att) =>
+                            att.user_id === user.id && att.status === "hadir"
+                    );
+
+                    // Only schedule if user hasn't attended yet
+                    if (!userAttendance) {
+                        const endDateTime = new Date(
+                            `${meetingData.date}T${meetingData.end_time}`
+                        );
+
+                        try {
+                            // Schedule 10-minute reminder
+                            await schedule10MinuteReminderNotification(
+                                id as string,
+                                meetingData.title,
+                                endDateTime
+                            );
+
+                            // Schedule missed meeting notification
+                            await scheduleMissedMeetingNotification(
+                                id as string,
+                                meetingData.title,
+                                endDateTime
+                            );
+                        } catch (notifError) {
+                            console.error(
+                                "Error scheduling notifications:",
+                                notifError
+                            );
+                        }
+                    }
+                }
+            }
         } catch (error) {
             console.error("Error loading meeting details:", error);
         } finally {
             setLoading(false);
         }
-    }, [id]);
+    }, [id, user]);
 
     useEffect(() => {
         loadMeetingDetails();

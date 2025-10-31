@@ -2,6 +2,7 @@ import PageHeader from "@/components/PageHeader";
 import QRScanner from "@/components/QRScanner";
 import Colors from "@/constants/Colors";
 import { useAuth } from "@/hooks/useAuth";
+import { cancelMeetingNotifications } from "@/lib/notifications";
 import { supabase } from "@/lib/supabase";
 import { router } from "expo-router";
 import React, { useState } from "react";
@@ -171,6 +172,14 @@ export default function ScanQRPage() {
                 Alert.alert("Error", "Gagal mencatat presensi");
                 setProcessing(false);
                 return;
+            }
+
+            // Cancel scheduled notifications for this meeting (user has attended)
+            try {
+                await cancelMeetingNotifications(meetingId);
+            } catch (notifError) {
+                console.error("Error canceling notifications:", notifError);
+                // Don't fail the attendance if notification cancel fails
             }
 
             // Success
