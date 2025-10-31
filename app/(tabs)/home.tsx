@@ -18,6 +18,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface MeetingWithAttendance extends Meeting {
     attendance?: Attendance[];
@@ -192,7 +193,7 @@ export default function HomePage() {
     }
 
     return (
-        <View style={styles.wrapper}>
+        <SafeAreaView style={styles.wrapper}>
             <ScrollView
                 style={styles.container}
                 refreshControl={
@@ -289,7 +290,7 @@ export default function HomePage() {
                     <Text style={styles.fabText}>Buat Rapat</Text>
                 </TouchableOpacity>
             )}
-        </View>
+        </SafeAreaView>
     );
 }
 
@@ -313,7 +314,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "center",
         paddingHorizontal: 20,
-        paddingTop: 60,
+        paddingTop: 20,
         paddingBottom: 20,
         backgroundColor: Colors.bgLight.backgroundColor,
     },

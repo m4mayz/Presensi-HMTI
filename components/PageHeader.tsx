@@ -38,7 +38,7 @@ export default function PageHeader({
 const styles = StyleSheet.create({
     header: {
         paddingHorizontal: 20,
-        paddingTop: 60,
+        paddingTop: 20,
         paddingBottom: 20,
         backgroundColor: Colors.blue,
         flexDirection: "row",

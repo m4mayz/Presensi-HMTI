@@ -13,6 +13,7 @@ import {
     StyleSheet,
     View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface AttendanceRecord {
     id: string;
@@ -87,7 +88,7 @@ export default function HistoryPage() {
     }
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container} edges={["top"]}>
             <PageHeader title="Riwayat Presensi" showBackButton />
 
             <ScrollView
@@ -120,7 +121,7 @@ export default function HistoryPage() {
 
                 <View style={{ height: 100 }} />
             </ScrollView>
-        </View>
+        </SafeAreaView>
     );
 }
 

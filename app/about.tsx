@@ -11,6 +11,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface TeamMember {
     name: string;
@@ -108,74 +109,83 @@ export default function AboutPage() {
     );
 
     return (
-        <View style={styles.container}>
-            <PageHeader title="Tentang Aplikasi" showBackButton />
+        <SafeAreaView style={styles.wrapper}>
+            <View style={styles.container}>
+                <PageHeader title="Tentang Aplikasi" showBackButton />
 
-            <ScrollView
-                style={styles.scrollView}
-                contentContainerStyle={styles.scrollContent}
-                showsVerticalScrollIndicator={false}
-            >
-                {/* App Info Card */}
-                <View style={styles.appInfoCard}>
-                    <View style={styles.appIconContainer}>
-                        <Image
-                            source={require("@/assets/images/icon.png")}
-                            style={styles.appIcon}
-                        />
+                <ScrollView
+                    style={styles.scrollView}
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
+                >
+                    {/* App Info Card */}
+                    <View style={styles.appInfoCard}>
+                        <View style={styles.appIconContainer}>
+                            <Image
+                                source={require("@/assets/images/icon.png")}
+                                style={styles.appIcon}
+                            />
+                        </View>
+                        <Text style={styles.appName}>Presensi HMTI</Text>
+                        <Text style={styles.appVersion}>Version 1.0.0</Text>
+                        <Text style={styles.appDescription}>
+                            Aplikasi presensi berbasis QR Code untuk HMTI
+                            (Himpunan Mahasiswa Teknik Informatika). Memudahkan
+                            pencatatan kehadiran rapat dengan sistem QR Code
+                            yang aman dan real-time.
+                        </Text>
                     </View>
-                    <Text style={styles.appName}>Presensi HMTI</Text>
-                    <Text style={styles.appVersion}>Version 1.0.0</Text>
-                    <Text style={styles.appDescription}>
-                        Aplikasi presensi berbasis QR Code untuk HMTI (Himpunan
-                        Mahasiswa Teknik Informatika). Memudahkan pencatatan
-                        kehadiran rapat dengan sistem QR Code yang aman dan
-                        real-time.
-                    </Text>
-                </View>
 
-                {/* Team Section */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Tim Pengembang</Text>
-                    {teamMembers.map((member, index) =>
-                        renderTeamMember(member, index)
-                    )}
-                </View>
+                    {/* Team Section */}
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>Tim Pengembang</Text>
+                        {teamMembers.map((member, index) =>
+                            renderTeamMember(member, index)
+                        )}
+                    </View>
 
-                {/* Tech Stack Section */}
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Teknologi</Text>
-                    <View style={styles.techStack}>
-                        <View style={styles.techItem}>
-                            <Text style={styles.techName}>React Native</Text>
-                        </View>
-                        <View style={styles.techItem}>
-                            <Text style={styles.techName}>Expo</Text>
-                        </View>
-                        <View style={styles.techItem}>
-                            <Text style={styles.techName}>TypeScript</Text>
-                        </View>
-                        <View style={styles.techItem}>
-                            <Text style={styles.techName}>Supabase</Text>
+                    {/* Tech Stack Section */}
+                    <View style={styles.section}>
+                        <Text style={styles.sectionTitle}>Teknologi</Text>
+                        <View style={styles.techStack}>
+                            <View style={styles.techItem}>
+                                <Text style={styles.techName}>
+                                    React Native
+                                </Text>
+                            </View>
+                            <View style={styles.techItem}>
+                                <Text style={styles.techName}>Expo</Text>
+                            </View>
+                            <View style={styles.techItem}>
+                                <Text style={styles.techName}>TypeScript</Text>
+                            </View>
+                            <View style={styles.techItem}>
+                                <Text style={styles.techName}>Supabase</Text>
+                            </View>
                         </View>
                     </View>
-                </View>
 
-                {/* Footer */}
-                <View style={styles.footer}>
-                    <Text style={styles.footerText}>
-                        © 2025 KOMINFO HMTI. Seluruh hak cipta.
-                    </Text>
-                </View>
-            </ScrollView>
-        </View>
+                    {/* Footer */}
+                    <View style={styles.footer}>
+                        <Text style={styles.footerText}>
+                            © 2025 KOMINFO HMTI. Seluruh hak cipta.
+                        </Text>
+                    </View>
+                </ScrollView>
+            </View>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
+    wrapper: {
+        flex: 1,
+        backgroundColor: Colors.blue,
+    },
     container: {
         flex: 1,
         backgroundColor: Colors.bgLight.backgroundColor,
+        marginBottom: -20,
     },
     scrollView: {
         flex: 1,

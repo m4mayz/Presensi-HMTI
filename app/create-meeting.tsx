@@ -20,6 +20,7 @@ import {
     TouchableWithoutFeedback,
     View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CreateMeetingPage() {
     const { user } = useAuth();
@@ -43,22 +44,30 @@ export default function CreateMeetingPage() {
     // Check permission
     if (!user?.can_create_meeting) {
         return (
-            <KeyboardAvoidingView
-                style={styles.container}
-                behavior={Platform.OS === "ios" ? "padding" : "height"}
-            >
-                <PageHeader title="Buat Rapat" showBackButton />
-                <View style={styles.noPermissionContainer}>
-                    <Ionicons name="lock-closed" size={64} color="#CBD5E1" />
-                    <Text style={styles.noPermissionTitle}>Akses Ditolak</Text>
-                    <Text style={styles.noPermissionText}>
-                        Anda tidak memiliki izin untuk membuat rapat.
-                    </Text>
-                    <Text style={styles.noPermissionText}>
-                        Hubungi admin untuk mendapatkan akses.
-                    </Text>
-                </View>
-            </KeyboardAvoidingView>
+            <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
+                <KeyboardAvoidingView
+                    style={{ flex: 1 }}
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                >
+                    <PageHeader title="Buat Rapat" showBackButton />
+                    <View style={styles.noPermissionContainer}>
+                        <Ionicons
+                            name="lock-closed"
+                            size={64}
+                            color="#CBD5E1"
+                        />
+                        <Text style={styles.noPermissionTitle}>
+                            Akses Ditolak
+                        </Text>
+                        <Text style={styles.noPermissionText}>
+                            Anda tidak memiliki izin untuk membuat rapat.
+                        </Text>
+                        <Text style={styles.noPermissionText}>
+                            Hubungi admin untuk mendapatkan akses.
+                        </Text>
+                    </View>
+                </KeyboardAvoidingView>
+            </SafeAreaView>
         );
     }
 
@@ -229,247 +238,258 @@ export default function CreateMeetingPage() {
     };
 
     return (
-        <KeyboardAvoidingView
-            style={styles.container}
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
-        >
-            <PageHeader title="Buat Rapat" showBackButton />
+        <SafeAreaView style={styles.container} edges={["top"]}>
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+            >
+                <PageHeader title="Buat Rapat" showBackButton />
 
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <View style={styles.scrollWrapper}>
-                    <ScrollView
-                        style={styles.scrollView}
-                        contentContainerStyle={styles.scrollContent}
-                        keyboardShouldPersistTaps="handled"
-                    >
-                        {/* Info Card */}
-                        <View style={styles.infoCard}>
-                            <Ionicons
-                                name="information-circle"
-                                size={24}
-                                color={Colors.blue}
-                            />
-                            <Text style={styles.infoText}>
-                                Isi form di bawah untuk membuat rapat baru.
-                                Setelah rapat dibuat, Anda dapat menambahkan
-                                peserta di halaman detail rapat.
-                            </Text>
-                        </View>
-
-                        {/* Form */}
-                        <View style={styles.formSection}>
-                            {/* Title */}
-                            <View style={styles.inputGroup}>
-                                <Text style={styles.label}>
-                                    Judul Rapat{" "}
-                                    <Text style={styles.required}>*</Text>
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <View style={styles.scrollWrapper}>
+                        <ScrollView
+                            style={styles.scrollView}
+                            contentContainerStyle={styles.scrollContent}
+                            keyboardShouldPersistTaps="handled"
+                        >
+                            {/* Info Card */}
+                            <View style={styles.infoCard}>
+                                <Ionicons
+                                    name="information-circle"
+                                    size={24}
+                                    color={Colors.blue}
+                                />
+                                <Text style={styles.infoText}>
+                                    Isi form di bawah untuk membuat rapat baru.
+                                    Setelah rapat dibuat, Anda dapat menambahkan
+                                    peserta di halaman detail rapat.
                                 </Text>
-                                <View style={styles.inputContainer}>
-                                    <Ionicons
-                                        name="document-text-outline"
-                                        size={20}
-                                        color="#64748B"
-                                        style={styles.inputIcon}
-                                    />
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Contoh: Rapat Koordinasi Bulanan"
-                                        value={title}
-                                        onChangeText={setTitle}
-                                        editable={!loading}
-                                    />
-                                </View>
                             </View>
 
-                            {/* Description */}
-                            <View style={styles.inputGroup}>
-                                <Text style={styles.label}>
-                                    Deskripsi (Opsional)
-                                </Text>
-                                <View style={styles.textAreaContainer}>
-                                    <TextInput
-                                        style={styles.textArea}
-                                        placeholder="Deskripsi atau agenda rapat..."
-                                        value={description}
-                                        onChangeText={setDescription}
-                                        multiline
-                                        numberOfLines={4}
-                                        textAlignVertical="top"
-                                        editable={!loading}
-                                    />
+                            {/* Form */}
+                            <View style={styles.formSection}>
+                                {/* Title */}
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.label}>
+                                        Judul Rapat{" "}
+                                        <Text style={styles.required}>*</Text>
+                                    </Text>
+                                    <View style={styles.inputContainer}>
+                                        <Ionicons
+                                            name="document-text-outline"
+                                            size={20}
+                                            color="#64748B"
+                                            style={styles.inputIcon}
+                                        />
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Contoh: Rapat Triwulan"
+                                            placeholderTextColor="#94A3B8"
+                                            value={title}
+                                            onChangeText={setTitle}
+                                            editable={!loading}
+                                        />
+                                    </View>
                                 </View>
-                            </View>
 
-                            {/* Date */}
-                            <View style={styles.inputGroup}>
-                                <Text style={styles.label}>
-                                    Tanggal{" "}
-                                    <Text style={styles.required}>*</Text>
-                                </Text>
+                                {/* Description */}
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.label}>
+                                        Deskripsi (Opsional)
+                                    </Text>
+                                    <View style={styles.textAreaContainer}>
+                                        <TextInput
+                                            style={styles.textArea}
+                                            placeholder="Deskripsi atau agenda rapat..."
+                                            placeholderTextColor="#94A3B8"
+                                            value={description}
+                                            onChangeText={setDescription}
+                                            multiline
+                                            numberOfLines={4}
+                                            textAlignVertical="top"
+                                            editable={!loading}
+                                        />
+                                    </View>
+                                </View>
+
+                                {/* Date */}
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.label}>
+                                        Tanggal{" "}
+                                        <Text style={styles.required}>*</Text>
+                                    </Text>
+                                    <TouchableOpacity
+                                        style={styles.inputContainer}
+                                        onPress={() => setShowDatePicker(true)}
+                                        disabled={loading}
+                                    >
+                                        <Ionicons
+                                            name="calendar-outline"
+                                            size={20}
+                                            color="#64748B"
+                                            style={styles.inputIcon}
+                                        />
+                                        <Text style={styles.pickerText}>
+                                            {formatDisplayDate(selectedDate)}
+                                        </Text>
+                                    </TouchableOpacity>
+                                    {showDatePicker && (
+                                        <DateTimePicker
+                                            value={selectedDate}
+                                            mode="date"
+                                            display={
+                                                Platform.OS === "ios"
+                                                    ? "spinner"
+                                                    : "default"
+                                            }
+                                            onChange={onDateChange}
+                                            minimumDate={new Date()}
+                                        />
+                                    )}
+                                </View>
+
+                                {/* Time */}
+                                <View style={styles.timeRow}>
+                                    <View style={styles.timeInputGroup}>
+                                        <Text style={styles.label}>
+                                            Waktu Mulai{" "}
+                                            <Text style={styles.required}>
+                                                *
+                                            </Text>
+                                        </Text>
+                                        <TouchableOpacity
+                                            style={styles.inputContainer}
+                                            onPress={() =>
+                                                setShowStartTimePicker(true)
+                                            }
+                                            disabled={loading}
+                                        >
+                                            <Ionicons
+                                                name="time-outline"
+                                                size={20}
+                                                color="#64748B"
+                                                style={styles.inputIcon}
+                                            />
+                                            <Text style={styles.pickerText}>
+                                                {formatDisplayTime(startTime)}
+                                            </Text>
+                                        </TouchableOpacity>
+                                        {showStartTimePicker && (
+                                            <DateTimePicker
+                                                value={startTime}
+                                                mode="time"
+                                                display={
+                                                    Platform.OS === "ios"
+                                                        ? "spinner"
+                                                        : "default"
+                                                }
+                                                onChange={onStartTimeChange}
+                                                is24Hour={true}
+                                            />
+                                        )}
+                                    </View>
+
+                                    <View style={styles.timeInputGroup}>
+                                        <Text style={styles.label}>
+                                            Waktu Selesai{" "}
+                                            <Text style={styles.required}>
+                                                *
+                                            </Text>
+                                        </Text>
+                                        <TouchableOpacity
+                                            style={styles.inputContainer}
+                                            onPress={() =>
+                                                setShowEndTimePicker(true)
+                                            }
+                                            disabled={loading}
+                                        >
+                                            <Ionicons
+                                                name="time-outline"
+                                                size={20}
+                                                color="#64748B"
+                                                style={styles.inputIcon}
+                                            />
+                                            <Text style={styles.pickerText}>
+                                                {formatDisplayTime(endTime)}
+                                            </Text>
+                                        </TouchableOpacity>
+                                        {showEndTimePicker && (
+                                            <DateTimePicker
+                                                value={endTime}
+                                                mode="time"
+                                                display={
+                                                    Platform.OS === "ios"
+                                                        ? "spinner"
+                                                        : "default"
+                                                }
+                                                onChange={onEndTimeChange}
+                                                is24Hour={true}
+                                            />
+                                        )}
+                                    </View>
+                                </View>
+
+                                {/* Location */}
+                                <View style={styles.inputGroup}>
+                                    <Text style={styles.label}>
+                                        Lokasi{" "}
+                                        <Text style={styles.required}>*</Text>
+                                    </Text>
+                                    <View style={styles.inputContainer}>
+                                        <Ionicons
+                                            name="location-outline"
+                                            size={20}
+                                            color="#64748B"
+                                            style={styles.inputIcon}
+                                        />
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Contoh: Ruang Sekretariat HMTI"
+                                            placeholderTextColor="#94A3B8"
+                                            value={location}
+                                            onChangeText={setLocation}
+                                            editable={!loading}
+                                        />
+                                    </View>
+                                </View>
+
+                                {/* Submit Button */}
                                 <TouchableOpacity
-                                    style={styles.inputContainer}
-                                    onPress={() => setShowDatePicker(true)}
+                                    style={[
+                                        styles.submitButton,
+                                        loading && styles.submitButtonDisabled,
+                                    ]}
+                                    onPress={handleCreateMeeting}
                                     disabled={loading}
                                 >
-                                    <Ionicons
-                                        name="calendar-outline"
-                                        size={20}
-                                        color="#64748B"
-                                        style={styles.inputIcon}
-                                    />
-                                    <Text style={styles.pickerText}>
-                                        {formatDisplayDate(selectedDate)}
-                                    </Text>
-                                </TouchableOpacity>
-                                {showDatePicker && (
-                                    <DateTimePicker
-                                        value={selectedDate}
-                                        mode="date"
-                                        display={
-                                            Platform.OS === "ios"
-                                                ? "spinner"
-                                                : "default"
-                                        }
-                                        onChange={onDateChange}
-                                        minimumDate={new Date()}
-                                    />
-                                )}
-                            </View>
-
-                            {/* Time */}
-                            <View style={styles.timeRow}>
-                                <View style={styles.timeInputGroup}>
-                                    <Text style={styles.label}>
-                                        Waktu Mulai{" "}
-                                        <Text style={styles.required}>*</Text>
-                                    </Text>
-                                    <TouchableOpacity
-                                        style={styles.inputContainer}
-                                        onPress={() =>
-                                            setShowStartTimePicker(true)
-                                        }
-                                        disabled={loading}
-                                    >
-                                        <Ionicons
-                                            name="time-outline"
-                                            size={20}
-                                            color="#64748B"
-                                            style={styles.inputIcon}
-                                        />
-                                        <Text style={styles.pickerText}>
-                                            {formatDisplayTime(startTime)}
-                                        </Text>
-                                    </TouchableOpacity>
-                                    {showStartTimePicker && (
-                                        <DateTimePicker
-                                            value={startTime}
-                                            mode="time"
-                                            display={
-                                                Platform.OS === "ios"
-                                                    ? "spinner"
-                                                    : "default"
-                                            }
-                                            onChange={onStartTimeChange}
-                                            is24Hour={true}
-                                        />
-                                    )}
-                                </View>
-
-                                <View style={styles.timeInputGroup}>
-                                    <Text style={styles.label}>
-                                        Waktu Selesai{" "}
-                                        <Text style={styles.required}>*</Text>
-                                    </Text>
-                                    <TouchableOpacity
-                                        style={styles.inputContainer}
-                                        onPress={() =>
-                                            setShowEndTimePicker(true)
-                                        }
-                                        disabled={loading}
-                                    >
-                                        <Ionicons
-                                            name="time-outline"
-                                            size={20}
-                                            color="#64748B"
-                                            style={styles.inputIcon}
-                                        />
-                                        <Text style={styles.pickerText}>
-                                            {formatDisplayTime(endTime)}
-                                        </Text>
-                                    </TouchableOpacity>
-                                    {showEndTimePicker && (
-                                        <DateTimePicker
-                                            value={endTime}
-                                            mode="time"
-                                            display={
-                                                Platform.OS === "ios"
-                                                    ? "spinner"
-                                                    : "default"
-                                            }
-                                            onChange={onEndTimeChange}
-                                            is24Hour={true}
-                                        />
-                                    )}
-                                </View>
-                            </View>
-
-                            {/* Location */}
-                            <View style={styles.inputGroup}>
-                                <Text style={styles.label}>
-                                    Lokasi{" "}
-                                    <Text style={styles.required}>*</Text>
-                                </Text>
-                                <View style={styles.inputContainer}>
-                                    <Ionicons
-                                        name="location-outline"
-                                        size={20}
-                                        color="#64748B"
-                                        style={styles.inputIcon}
-                                    />
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Contoh: Ruang Rapat Lantai 2"
-                                        value={location}
-                                        onChangeText={setLocation}
-                                        editable={!loading}
-                                    />
-                                </View>
-                            </View>
-
-                            {/* Submit Button */}
-                            <TouchableOpacity
-                                style={[
-                                    styles.submitButton,
-                                    loading && styles.submitButtonDisabled,
-                                ]}
-                                onPress={handleCreateMeeting}
-                                disabled={loading}
-                            >
-                                {loading ? (
-                                    <ActivityIndicator
-                                        size="small"
-                                        color="#fff"
-                                    />
-                                ) : (
-                                    <>
-                                        <Ionicons
-                                            name="checkmark-circle"
-                                            size={20}
+                                    {loading ? (
+                                        <ActivityIndicator
+                                            size="small"
                                             color="#fff"
-                                            style={styles.buttonIcon}
                                         />
-                                        <Text style={styles.submitButtonText}>
-                                            Buat Rapat
-                                        </Text>
-                                    </>
-                                )}
-                            </TouchableOpacity>
-                        </View>
-                    </ScrollView>
-                </View>
-            </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
+                                    ) : (
+                                        <>
+                                            <Ionicons
+                                                name="checkmark-circle"
+                                                size={20}
+                                                color="#fff"
+                                                style={styles.buttonIcon}
+                                            />
+                                            <Text
+                                                style={styles.submitButtonText}
+                                            >
+                                                Buat Rapat
+                                            </Text>
+                                        </>
+                                    )}
+                                </TouchableOpacity>
+                            </View>
+                        </ScrollView>
+                    </View>
+                </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
+        </SafeAreaView>
     );
 }
 
@@ -485,7 +505,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     scrollContent: {
-        padding: 20,
+        paddingHorizontal: 20,
         paddingBottom: 40,
     },
     noPermissionContainer: {

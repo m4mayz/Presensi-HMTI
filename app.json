@@ -3,7 +3,7 @@
         "name": "Presensi-HMTI",
         "slug": "Presensi-HMTI",
         "version": "1.0.0",
-        "orientation": "portrait",
+        "orientation": "default",
         "icon": "./assets/images/icon.png",
         "scheme": "presensihmti",
         "userInterfaceStyle": "automatic",
@@ -13,13 +13,17 @@
             "bundleIdentifier": "com.m4mayz.PresensiHMTI",
             "infoPlist": {
                 "ITSAppUsesNonExemptEncryption": false,
-                "NSCameraUsageDescription": "Aplikasi memerlukan akses kamera untuk scan QR Code presensi"
+                "NSCameraUsageDescription": "Aplikasi memerlukan akses kamera untuk scan QR Code presensi",
+                "UISupportedInterfaceOrientations": [
+                    "UIInterfaceOrientationPortrait"
+                ]
             }
         },
         "android": {
             "edgeToEdgeEnabled": true,
             "predictiveBackGestureEnabled": false,
             "package": "com.m4mayz.PresensiHMTI",
+            "versionCode": 1,
             "permissions": ["android.permission.CAMERA"]
         },
         "web": {

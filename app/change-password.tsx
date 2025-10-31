@@ -15,6 +15,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ChangePasswordPage() {
     const { user, signOut } = useAuth();
@@ -119,216 +120,229 @@ export default function ChangePasswordPage() {
     };
 
     return (
-        <View style={styles.container}>
-            <PageHeader title="Ganti Password" showBackButton />
+        <SafeAreaView style={styles.wrapper}>
+            <View style={styles.container}>
+                <PageHeader title="Ganti Password" showBackButton />
 
-            <ScrollView
-                style={styles.scrollView}
-                contentContainerStyle={styles.scrollContent}
-            >
-                {/* Info Card */}
-                <View style={styles.infoCard}>
-                    <Ionicons
-                        name="information-circle"
-                        size={24}
-                        color={Colors.blue}
-                    />
-                    <Text style={styles.infoText}>
-                        Password minimal 6 karakter. Setelah berhasil mengubah
-                        password, Anda akan diminta login kembali.
-                    </Text>
-                </View>
-
-                {/* Form */}
-                <View style={styles.formSection}>
-                    {/* Current Password */}
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Password Lama</Text>
-                        <View style={styles.inputContainer}>
-                            <Ionicons
-                                name="lock-closed-outline"
-                                size={20}
-                                color="#64748B"
-                                style={styles.inputIcon}
-                            />
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Masukkan password lama"
-                                value={currentPassword}
-                                onChangeText={setCurrentPassword}
-                                secureTextEntry={!showCurrentPassword}
-                                autoCapitalize="none"
-                                editable={!loading}
-                            />
-                            <TouchableOpacity
-                                onPress={() =>
-                                    setShowCurrentPassword(!showCurrentPassword)
-                                }
-                                style={styles.eyeIcon}
-                            >
-                                <Ionicons
-                                    name={
-                                        showCurrentPassword
-                                            ? "eye-outline"
-                                            : "eye-off-outline"
-                                    }
-                                    size={20}
-                                    color="#64748B"
-                                />
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-
-                    {/* New Password */}
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Password Baru</Text>
-                        <View style={styles.inputContainer}>
-                            <Ionicons
-                                name="lock-closed-outline"
-                                size={20}
-                                color="#64748B"
-                                style={styles.inputIcon}
-                            />
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Masukkan password baru"
-                                value={newPassword}
-                                onChangeText={setNewPassword}
-                                secureTextEntry={!showNewPassword}
-                                autoCapitalize="none"
-                                editable={!loading}
-                            />
-                            <TouchableOpacity
-                                onPress={() =>
-                                    setShowNewPassword(!showNewPassword)
-                                }
-                                style={styles.eyeIcon}
-                            >
-                                <Ionicons
-                                    name={
-                                        showNewPassword
-                                            ? "eye-outline"
-                                            : "eye-off-outline"
-                                    }
-                                    size={20}
-                                    color="#64748B"
-                                />
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-
-                    {/* Confirm Password */}
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>
-                            Konfirmasi Password Baru
+                <ScrollView
+                    style={styles.scrollView}
+                    contentContainerStyle={styles.scrollContent}
+                >
+                    {/* Info Card */}
+                    <View style={styles.infoCard}>
+                        <Ionicons
+                            name="information-circle"
+                            size={24}
+                            color={Colors.blue}
+                        />
+                        <Text style={styles.infoText}>
+                            Password minimal 6 karakter. Setelah berhasil
+                            mengubah password, Anda akan diminta login kembali.
                         </Text>
-                        <View style={styles.inputContainer}>
-                            <Ionicons
-                                name="lock-closed-outline"
-                                size={20}
-                                color="#64748B"
-                                style={styles.inputIcon}
-                            />
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Masukkan ulang password baru"
-                                value={confirmPassword}
-                                onChangeText={setConfirmPassword}
-                                secureTextEntry={!showConfirmPassword}
-                                autoCapitalize="none"
-                                editable={!loading}
-                            />
-                            <TouchableOpacity
-                                onPress={() =>
-                                    setShowConfirmPassword(!showConfirmPassword)
-                                }
-                                style={styles.eyeIcon}
-                            >
-                                <Ionicons
-                                    name={
-                                        showConfirmPassword
-                                            ? "eye-outline"
-                                            : "eye-off-outline"
-                                    }
-                                    size={20}
-                                    color="#64748B"
-                                />
-                            </TouchableOpacity>
-                        </View>
                     </View>
 
-                    {/* Submit Button */}
-                    <TouchableOpacity
-                        style={[
-                            styles.submitButton,
-                            loading && styles.submitButtonDisabled,
-                        ]}
-                        onPress={handleChangePassword}
-                        disabled={loading}
-                    >
-                        {loading ? (
-                            <ActivityIndicator size="small" color="#fff" />
-                        ) : (
-                            <Text style={styles.submitButtonText}>
-                                Simpan Password Baru
+                    {/* Form */}
+                    <View style={styles.formSection}>
+                        {/* Current Password */}
+                        <View style={styles.inputGroup}>
+                            <Text style={styles.label}>Password Lama</Text>
+                            <View style={styles.inputContainer}>
+                                <Ionicons
+                                    name="lock-closed-outline"
+                                    size={20}
+                                    color="#64748B"
+                                    style={styles.inputIcon}
+                                />
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Masukkan password lama"
+                                    value={currentPassword}
+                                    onChangeText={setCurrentPassword}
+                                    secureTextEntry={!showCurrentPassword}
+                                    autoCapitalize="none"
+                                    editable={!loading}
+                                />
+                                <TouchableOpacity
+                                    onPress={() =>
+                                        setShowCurrentPassword(
+                                            !showCurrentPassword
+                                        )
+                                    }
+                                    style={styles.eyeIcon}
+                                >
+                                    <Ionicons
+                                        name={
+                                            showCurrentPassword
+                                                ? "eye-outline"
+                                                : "eye-off-outline"
+                                        }
+                                        size={20}
+                                        color="#64748B"
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+                        {/* New Password */}
+                        <View style={styles.inputGroup}>
+                            <Text style={styles.label}>Password Baru</Text>
+                            <View style={styles.inputContainer}>
+                                <Ionicons
+                                    name="lock-closed-outline"
+                                    size={20}
+                                    color="#64748B"
+                                    style={styles.inputIcon}
+                                />
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Masukkan password baru"
+                                    value={newPassword}
+                                    onChangeText={setNewPassword}
+                                    secureTextEntry={!showNewPassword}
+                                    autoCapitalize="none"
+                                    editable={!loading}
+                                />
+                                <TouchableOpacity
+                                    onPress={() =>
+                                        setShowNewPassword(!showNewPassword)
+                                    }
+                                    style={styles.eyeIcon}
+                                >
+                                    <Ionicons
+                                        name={
+                                            showNewPassword
+                                                ? "eye-outline"
+                                                : "eye-off-outline"
+                                        }
+                                        size={20}
+                                        color="#64748B"
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+                        {/* Confirm Password */}
+                        <View style={styles.inputGroup}>
+                            <Text style={styles.label}>
+                                Konfirmasi Password Baru
                             </Text>
-                        )}
-                    </TouchableOpacity>
-                </View>
+                            <View style={styles.inputContainer}>
+                                <Ionicons
+                                    name="lock-closed-outline"
+                                    size={20}
+                                    color="#64748B"
+                                    style={styles.inputIcon}
+                                />
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Masukkan ulang password baru"
+                                    value={confirmPassword}
+                                    onChangeText={setConfirmPassword}
+                                    secureTextEntry={!showConfirmPassword}
+                                    autoCapitalize="none"
+                                    editable={!loading}
+                                />
+                                <TouchableOpacity
+                                    onPress={() =>
+                                        setShowConfirmPassword(
+                                            !showConfirmPassword
+                                        )
+                                    }
+                                    style={styles.eyeIcon}
+                                >
+                                    <Ionicons
+                                        name={
+                                            showConfirmPassword
+                                                ? "eye-outline"
+                                                : "eye-off-outline"
+                                        }
+                                        size={20}
+                                        color="#64748B"
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                        </View>
 
-                {/* Security Tips */}
-                <View style={styles.tipsCard}>
-                    <Text style={styles.tipsTitle}>Tips Keamanan Password</Text>
-                    <View style={styles.tipItem}>
-                        <Ionicons
-                            name="checkmark-circle"
-                            size={16}
-                            color={Colors.green}
-                        />
-                        <Text style={styles.tipText}>
-                            Gunakan kombinasi huruf, angka, dan simbol
-                        </Text>
+                        {/* Submit Button */}
+                        <TouchableOpacity
+                            style={[
+                                styles.submitButton,
+                                loading && styles.submitButtonDisabled,
+                            ]}
+                            onPress={handleChangePassword}
+                            disabled={loading}
+                        >
+                            {loading ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Text style={styles.submitButtonText}>
+                                    Simpan Password Baru
+                                </Text>
+                            )}
+                        </TouchableOpacity>
                     </View>
-                    <View style={styles.tipItem}>
-                        <Ionicons
-                            name="checkmark-circle"
-                            size={16}
-                            color={Colors.green}
-                        />
-                        <Text style={styles.tipText}>
-                            Minimal 6 karakter (lebih panjang lebih baik)
+
+                    {/* Security Tips */}
+                    <View style={styles.tipsCard}>
+                        <Text style={styles.tipsTitle}>
+                            Tips Keamanan Password
                         </Text>
+                        <View style={styles.tipItem}>
+                            <Ionicons
+                                name="checkmark-circle"
+                                size={16}
+                                color={Colors.green}
+                            />
+                            <Text style={styles.tipText}>
+                                Gunakan kombinasi huruf, angka, dan simbol
+                            </Text>
+                        </View>
+                        <View style={styles.tipItem}>
+                            <Ionicons
+                                name="checkmark-circle"
+                                size={16}
+                                color={Colors.green}
+                            />
+                            <Text style={styles.tipText}>
+                                Minimal 6 karakter (lebih panjang lebih baik)
+                            </Text>
+                        </View>
+                        <View style={styles.tipItem}>
+                            <Ionicons
+                                name="checkmark-circle"
+                                size={16}
+                                color={Colors.green}
+                            />
+                            <Text style={styles.tipText}>
+                                Jangan gunakan password yang mudah ditebak
+                            </Text>
+                        </View>
+                        <View style={styles.tipItem}>
+                            <Ionicons
+                                name="checkmark-circle"
+                                size={16}
+                                color={Colors.green}
+                            />
+                            <Text style={styles.tipText}>
+                                Jangan bagikan password kepada siapapun
+                            </Text>
+                        </View>
                     </View>
-                    <View style={styles.tipItem}>
-                        <Ionicons
-                            name="checkmark-circle"
-                            size={16}
-                            color={Colors.green}
-                        />
-                        <Text style={styles.tipText}>
-                            Jangan gunakan password yang mudah ditebak
-                        </Text>
-                    </View>
-                    <View style={styles.tipItem}>
-                        <Ionicons
-                            name="checkmark-circle"
-                            size={16}
-                            color={Colors.green}
-                        />
-                        <Text style={styles.tipText}>
-                            Jangan bagikan password kepada siapapun
-                        </Text>
-                    </View>
-                </View>
-            </ScrollView>
-        </View>
+                </ScrollView>
+            </View>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
+    wrapper: {
+        flex: 1,
+        backgroundColor: Colors.blue,
+    },
     container: {
         flex: 1,
         backgroundColor: Colors.bgLight.backgroundColor,
+        marginBottom: -20,
     },
     scrollView: {
         flex: 1,

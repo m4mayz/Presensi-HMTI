@@ -18,6 +18,7 @@ import {
     TouchableWithoutFeedback,
     View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const LoginPage: React.FC = () => {
     const [nim, setNim] = useState("");
@@ -85,118 +86,123 @@ const LoginPage: React.FC = () => {
     };
 
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={styles.container}
-        >
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <View style={styles.content}>
-                    {/* Logo */}
-                    <View style={styles.logoContainer}>
-                        <Image
-                            source={require("@/assets/images/icon.png")}
-                            style={styles.logo}
-                            resizeMode="contain"
-                        />
-                    </View>
-
-                    {/* Title */}
-                    <Text style={styles.title}>Presensi Rapat</Text>
-                    <Text style={styles.subtitle}>
-                        Silakan login dengan NIM Anda
-                    </Text>
-
-                    {/* Login Form */}
-                    <View style={styles.formContainer}>
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.label}>NIM</Text>
-                            <View style={styles.inputContainer}>
-                                <Ionicons
-                                    name="person-outline"
-                                    size={20}
-                                    color="#64748B"
-                                    style={styles.inputIcon}
-                                />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Masukkan NIM"
-                                    placeholderTextColor="#9CA3AF"
-                                    value={nim}
-                                    onChangeText={setNim}
-                                    keyboardType="numeric"
-                                    autoCapitalize="none"
-                                    editable={!loading}
-                                />
-                            </View>
+        <SafeAreaView style={styles.container} edges={["top"]}>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                style={styles.flex}
+            >
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <View style={styles.content}>
+                        {/* Logo */}
+                        <View style={styles.logoContainer}>
+                            <Image
+                                source={require("@/assets/images/icon.png")}
+                                style={styles.logo}
+                                resizeMode="contain"
+                            />
                         </View>
 
-                        <View style={styles.inputGroup}>
-                            <Text style={styles.label}>Password</Text>
-                            <View style={styles.inputContainer}>
-                                <Ionicons
-                                    name="lock-closed-outline"
-                                    size={20}
-                                    color="#64748B"
-                                    style={styles.inputIcon}
-                                />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Masukkan password"
-                                    placeholderTextColor="#9CA3AF"
-                                    value={password}
-                                    onChangeText={setPassword}
-                                    secureTextEntry={!showPassword}
-                                    autoCapitalize="none"
-                                    editable={!loading}
-                                />
-                                <TouchableOpacity
-                                    onPress={() =>
-                                        setShowPassword(!showPassword)
-                                    }
-                                    style={styles.eyeIcon}
-                                >
+                        {/* Title */}
+                        <Text style={styles.title}>Presensi Rapat</Text>
+                        <Text style={styles.subtitle}>
+                            Silakan login dengan NIM Anda
+                        </Text>
+
+                        {/* Login Form */}
+                        <View style={styles.formContainer}>
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>NIM</Text>
+                                <View style={styles.inputContainer}>
                                     <Ionicons
-                                        name={
-                                            showPassword
-                                                ? "eye-outline"
-                                                : "eye-off-outline"
-                                        }
+                                        name="person-outline"
                                         size={20}
                                         color="#64748B"
+                                        style={styles.inputIcon}
                                     />
-                                </TouchableOpacity>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Masukkan NIM"
+                                        placeholderTextColor="#9CA3AF"
+                                        value={nim}
+                                        onChangeText={setNim}
+                                        keyboardType="numeric"
+                                        autoCapitalize="none"
+                                        editable={!loading}
+                                    />
+                                </View>
                             </View>
+
+                            <View style={styles.inputGroup}>
+                                <Text style={styles.label}>Password</Text>
+                                <View style={styles.inputContainer}>
+                                    <Ionicons
+                                        name="lock-closed-outline"
+                                        size={20}
+                                        color="#64748B"
+                                        style={styles.inputIcon}
+                                    />
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Masukkan password"
+                                        placeholderTextColor="#9CA3AF"
+                                        value={password}
+                                        onChangeText={setPassword}
+                                        secureTextEntry={!showPassword}
+                                        autoCapitalize="none"
+                                        editable={!loading}
+                                    />
+                                    <TouchableOpacity
+                                        onPress={() =>
+                                            setShowPassword(!showPassword)
+                                        }
+                                        style={styles.eyeIcon}
+                                    >
+                                        <Ionicons
+                                            name={
+                                                showPassword
+                                                    ? "eye-outline"
+                                                    : "eye-off-outline"
+                                            }
+                                            size={20}
+                                            color="#64748B"
+                                        />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+
+                            <TouchableOpacity
+                                style={[
+                                    styles.loginButton,
+                                    loading && styles.loginButtonDisabled,
+                                ]}
+                                onPress={handleLogin}
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                    <ActivityIndicator
+                                        size="small"
+                                        color="#fff"
+                                    />
+                                ) : (
+                                    <Text style={styles.loginButtonText}>
+                                        Login
+                                    </Text>
+                                )}
+                            </TouchableOpacity>
+
+                            <TouchableOpacity onPress={handleForgotPassword}>
+                                <Text style={styles.forgotPassword}>
+                                    Lupa password?{" "}
+                                    <Text style={styles.adminLink}>
+                                        Hubungi admin
+                                    </Text>
+                                </Text>
+                            </TouchableOpacity>
                         </View>
-
-                        <TouchableOpacity
-                            style={[
-                                styles.loginButton,
-                                loading && styles.loginButtonDisabled,
-                            ]}
-                            onPress={handleLogin}
-                            disabled={loading}
-                        >
-                            {loading ? (
-                                <ActivityIndicator size="small" color="#fff" />
-                            ) : (
-                                <Text style={styles.loginButtonText}>
-                                    Login
-                                </Text>
-                            )}
-                        </TouchableOpacity>
-
-                        <TouchableOpacity onPress={handleForgotPassword}>
-                            <Text style={styles.forgotPassword}>
-                                Lupa password?{" "}
-                                <Text style={styles.adminLink}>
-                                    Hubungi admin
-                                </Text>
-                            </Text>
-                        </TouchableOpacity>
                     </View>
-                </View>
-            </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
+                </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
+        </SafeAreaView>
     );
 };
 
@@ -204,6 +210,9 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: Colors.bgLight.backgroundColor,
+    },
+    flex: {
+        flex: 1,
     },
     content: {
         flex: 1,

@@ -17,6 +17,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface ParticipantWithUser {
     id: string;
@@ -375,10 +376,10 @@ export default function MeetingDetailPage() {
     }
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container} edges={["top"]}>
             <PageHeader title="Detail Rapat" showBackButton />
 
-            {/* Meeting Info Card - Fixed */}
+            {/* Meeting Info Card*/}
             <View style={styles.meetingInfoCard}>
                 {/* Edit & Delete Buttons - Top Right (Only for Creator) */}
                 {isCreator() && (
@@ -626,7 +627,7 @@ export default function MeetingDetailPage() {
                     )}
                 </ScrollView>
             </View>
-        </View>
+        </SafeAreaView>
     );
 }
 

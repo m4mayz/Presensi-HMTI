@@ -25,6 +25,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfilePage() {
     const { user, signOut, refreshUser } = useAuth();
@@ -138,89 +139,100 @@ export default function ProfilePage() {
     };
 
     return (
-        <ScrollView style={styles.container}>
-            {/* Header */}
-            <PageHeader title="Profil" showBackButton />
+        <SafeAreaView style={styles.wrapper}>
+            <ScrollView style={styles.container}>
+                {/* Header */}
+                <PageHeader title="Profil" showBackButton />
 
-            {/* Profile Section */}
-            <View style={styles.profileSection}>
-                <View style={styles.avatarContainer}>
-                    {localPhotoUri || user?.profile_photo ? (
-                        <Image
-                            source={{
-                                uri: (localPhotoUri ||
-                                    user?.profile_photo) as string,
-                            }}
-                            style={styles.avatar}
-                        />
-                    ) : (
-                        <View style={styles.avatarPlaceholder}>
-                            <Text style={styles.avatarText}>
-                                {user?.name?.charAt(0).toUpperCase() || "?"}
-                            </Text>
-                        </View>
-                    )}
-                    <TouchableOpacity
-                        style={styles.cameraButton}
-                        onPress={showPhotoOptions}
-                        disabled={uploading}
-                    >
-                        {uploading ? (
-                            <ActivityIndicator size="small" color="#fff" />
+                {/* Profile Section */}
+                <View style={styles.profileSection}>
+                    <View style={styles.avatarContainer}>
+                        {localPhotoUri || user?.profile_photo ? (
+                            <Image
+                                source={{
+                                    uri: (localPhotoUri ||
+                                        user?.profile_photo) as string,
+                                }}
+                                style={styles.avatar}
+                            />
                         ) : (
-                            <Ionicons name="camera" size={16} color="#fff" />
+                            <View style={styles.avatarPlaceholder}>
+                                <Text style={styles.avatarText}>
+                                    {user?.name?.charAt(0).toUpperCase() || "?"}
+                                </Text>
+                            </View>
                         )}
-                    </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.cameraButton}
+                            onPress={showPhotoOptions}
+                            disabled={uploading}
+                        >
+                            {uploading ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <Ionicons
+                                    name="camera"
+                                    size={16}
+                                    color="#fff"
+                                />
+                            )}
+                        </TouchableOpacity>
+                    </View>
+
+                    <Text style={styles.userName}>{user?.name || "User"}</Text>
+                    <Text style={styles.userInfo}>
+                        {user?.nim || "2023001"} -{" "}
+                        {user?.divisi || "Divisi Kominfo"}
+                    </Text>
                 </View>
 
-                <Text style={styles.userName}>{user?.name || "User"}</Text>
-                <Text style={styles.userInfo}>
-                    {user?.nim || "2023001"} -{" "}
-                    {user?.divisi || "Divisi Kominfo"}
-                </Text>
-            </View>
+                {/* Menu Section */}
+                <View style={styles.menuSection}>
+                    <ProfileMenuItem
+                        icon="key-outline"
+                        iconColor={Colors.blue}
+                        title="Ganti Password"
+                        onPress={handleChangePassword}
+                    />
 
-            {/* Menu Section */}
-            <View style={styles.menuSection}>
-                <ProfileMenuItem
-                    icon="key-outline"
-                    iconColor={Colors.blue}
-                    title="Ganti Password"
-                    onPress={handleChangePassword}
-                />
+                    <ProfileMenuItem
+                        icon="information-circle-outline"
+                        iconColor={Colors.blue}
+                        title="Tentang Aplikasi"
+                        onPress={() => router.push("/about")}
+                    />
 
-                <ProfileMenuItem
-                    icon="information-circle-outline"
-                    iconColor={Colors.blue}
-                    title="Tentang Aplikasi"
-                    onPress={() => router.push("/about")}
-                />
+                    <ProfileMenuItem
+                        icon="help-circle-outline"
+                        iconColor={Colors.blue}
+                        title="Bantuan"
+                        subtitle="(Hubungi Admin)"
+                        onPress={handleContactAdmin}
+                    />
 
-                <ProfileMenuItem
-                    icon="help-circle-outline"
-                    iconColor={Colors.blue}
-                    title="Bantuan"
-                    subtitle="(Hubungi Admin)"
-                    onPress={handleContactAdmin}
-                />
-
-                <ProfileMenuItem
-                    icon="log-out-outline"
-                    iconColor="#EF4444"
-                    title="Logout"
-                    onPress={handleLogout}
-                    showChevron={false}
-                    isLogout
-                />
-            </View>
-        </ScrollView>
+                    <ProfileMenuItem
+                        icon="log-out-outline"
+                        iconColor="#EF4444"
+                        title="Logout"
+                        onPress={handleLogout}
+                        showChevron={false}
+                        isLogout
+                    />
+                </View>
+            </ScrollView>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
+    wrapper: {
+        flex: 1,
+        backgroundColor: Colors.blue,
+    },
     container: {
         flex: 1,
         backgroundColor: Colors.bgLight.backgroundColor,
+        marginBottom: -20,
     },
     header: {
         backgroundColor: Colors.blue,

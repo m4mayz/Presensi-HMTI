@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ScanQRPage() {
     const { user } = useAuth();
@@ -197,7 +198,7 @@ export default function ScanQRPage() {
     };
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <PageHeader title="Scan QR Code" showBackButton />
 
             <View style={styles.content}>
@@ -231,7 +232,7 @@ export default function ScanQRPage() {
                     </View>
                 )}
             </View>
-        </View>
+        </SafeAreaView>
     );
 }
 

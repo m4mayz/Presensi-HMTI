@@ -287,7 +287,7 @@ export default function EditMeetingPage() {
                                     />
                                     <TextInput
                                         style={styles.input}
-                                        placeholder="Contoh: Rapat Koordinasi Bulanan"
+                                        placeholder="Contoh: Rapat Triwulan"
                                         value={title}
                                         onChangeText={setTitle}
                                         editable={!saving}
@@ -442,7 +442,7 @@ export default function EditMeetingPage() {
                                     />
                                     <TextInput
                                         style={styles.input}
-                                        placeholder="Contoh: Ruang Rapat Lantai 2"
+                                        placeholder="Contoh: Ruang Sekretariat HMTI"
                                         value={location}
                                         onChangeText={setLocation}
                                         editable={!saving}
