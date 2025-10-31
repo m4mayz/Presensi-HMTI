@@ -27,11 +27,7 @@
             "permissions": [
                 "android.permission.CAMERA",
                 "android.permission.POST_NOTIFICATIONS"
-            ],
-            "adaptiveIcon": {
-                "foregroundImage": "./assets/images/icon.png",
-                "backgroundColor": "#ffffff"
-            }
+            ]
         },
         "web": {
             "output": "static",
@@ -57,7 +53,8 @@
                 "expo-splash-screen",
                 {
                     "image": "./assets/images/splash-icon.png",
-                    "imageWidth": 200,
+                    "imageWidth": 100,
+                    "resizeMode": "cover",
                     "backgroundColor": "#ffffff"
                 }
             ]
